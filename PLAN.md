@@ -21,7 +21,7 @@ domain practices and the user ratifies them.
 | Workers | `.claude/agents/`, Haiku | `searcher` (read-only), `test-writer`, `implementer`. Each reads one guide first. |
 | Guides | `meta/guides/` | Procedures. Core guides are written by a human and owned by the template. `init-factory` writes stack overlays in `meta/guides/stack/` only. |
 | Defaults | `meta/architecture/`, `meta/registry/` | Vertical slices. PostgreSQL only. Runner TBD. Defaults are priors that `init-factory` may supersede by a ratified decision. |
-| Practices | `meta/practices/` | Testing rules. `init-factory` vendors facet packs from the central repo `ghostinside-practices` and pins them in `practices.lock`. |
+| Practices | `meta/practices/` | Testing rules. `init-factory` vendors facet packs from the central repo `CodingSar/GhostInsidePractices` and pins them in `practices.lock`. |
 | Checks | `meta/tools/check-harness.sh` | Deterministic checks on the harness itself. |
 
 ## Flow
@@ -56,7 +56,7 @@ gets. Fixtures are Backlog tasks with known outcomes, so runs are comparable.
 
 ## Next
 
-1. Central practices repo `ghostinside-practices`, created by the user
+1. Central practices repo `git@github.com:CodingSar/GhostInsidePractices.git`, created by the user
    (`TASK-3`).
 2. `init-factory` skill (`TASK-2`). Runs in the Opus main thread inside a
    clone. Phases: brief, facets, stack and architecture, practices,
