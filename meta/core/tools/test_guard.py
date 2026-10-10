@@ -60,6 +60,32 @@ BLOCKED = [
     "git push --for origin main",
     "rm --rec --forc x",
     "git push -f 'unbalanced",
+    "git push origin :main",
+    "git push origin --delete main",
+    "git push -d origin main",
+    "git push --prune origin",
+    "git push --del origin main",
+]
+
+AGENT_BLOCKED = [
+    "git commit -m x",
+    "git add -A",
+    "git reset --hard",
+    "git stash",
+    "git checkout -- .",
+    "git -C repo commit -m x",
+    "cd x && git commit -am y",
+    "bash -c 'git commit -m x'",
+    "git push origin main",
+]
+
+AGENT_ALLOWED = [
+    "git status",
+    "git diff HEAD",
+    "git log --oneline -5",
+    "git -C repo show HEAD",
+    "git --version",
+    "pytest tests/",
 ]
 
 ALLOWED = [
@@ -81,6 +107,8 @@ ALLOWED = [
     "find . -name '*.pyc' -exec rm {} +",
     "echo 'line1\nline2'",
     "git commit -m 'subject\n\nbody'",
+    "git push --dry-run origin main",
+    "git push origin main:main",
 ]
 
 
@@ -95,15 +123,48 @@ class GuardTest(unittest.TestCase):
             with self.subTest(cmd=cmd):
                 self.assertIsNone(guard.check(cmd))
 
+    def test_agent_git(self):
+        for cmd in AGENT_BLOCKED:
+            with self.subTest(cmd=cmd):
+                self.assertIsNotNone(guard.check(cmd, agent=True))
+                if cmd != "git push origin main":
+                    self.assertIsNone(guard.check(cmd))
+        for cmd in AGENT_ALLOWED:
+            with self.subTest(cmd=cmd):
+                self.assertIsNone(guard.check(cmd, agent=True))
+
+    def test_agent_paths(self):
+        root = "/proj"
+        for path in (".claude/settings.json", "/proj/meta/core/tools/loop.py", "meta/product/stack.md",
+                     "AGENTS.md", ".git/config", ".scratch/current", ".scratch/run-1/state.json",
+                     ".scratch/run-1/log.md", "src/../.claude/x", "/etc/passwd"):
+            with self.subTest(path=path):
+                self.assertIsNotNone(guard.check_path(path, root))
+        for path in ("src/modules/a/index.py", "/proj/.scratch/run-1/frames/01-intake.out.md",
+                     "meta/product/screens/home.html", "tests/test_a.py"):
+            with self.subTest(path=path):
+                self.assertIsNone(guard.check_path(path, root))
+
     def test_hook_exit_codes(self):
-        def run(cmd):
-            event = {"tool_name": "Bash", "tool_input": {"command": cmd}}
+        def run(cmd, **extra):
+            event = {"tool_name": "Bash", "tool_input": {"command": cmd}, **extra}
             return subprocess.run([sys.executable, "-I", str(SCRIPT)], input=json.dumps(event),
                                   capture_output=True, text=True)
         blocked = run("git push --force")
         self.assertEqual(blocked.returncode, 2)
         self.assertIn("force push", blocked.stderr)
         self.assertEqual(run("git push origin main").returncode, 0)
+        self.assertEqual(run("git commit -m x").returncode, 0)
+        self.assertEqual(run("git commit -m x", agent_type="implementer").returncode, 2)
+
+    def test_hook_file_writes(self):
+        def run(tool, path, **extra):
+            event = {"tool_name": tool, "tool_input": {"file_path": path}, "cwd": "/proj", **extra}
+            return subprocess.run([sys.executable, "-I", str(SCRIPT)], input=json.dumps(event),
+                                  capture_output=True, text=True).returncode
+        self.assertEqual(run("Edit", ".claude/settings.json"), 0)
+        self.assertEqual(run("Edit", ".claude/settings.json", agent_type="implementer"), 2)
+        self.assertEqual(run("Write", "src/a.py", agent_type="implementer"), 0)
 
 
 if __name__ == "__main__":

@@ -34,7 +34,7 @@ proposes the stack and practices and the user ratifies them (`HD-5`).
 | Defaults | `meta/core/defaults/` | Modules of slices; PostgreSQL only. Overridden only by a product file and a ratified decision (`HD-6`, `HD-9`). |
 | Stack | `meta/product/stack.md` | Every command the factory runs. TBD in the template. |
 | Practices | `meta/product/practices/` | Facet packs from the central repo, vendored and locked (`HD-8`). |
-| Tools | `meta/core/tools/` | `loop.py` (dispatcher loop and hooks), `packet.py` (research packet), `structure.py` (product layout and size), `practices.py` (packs), `guard.py` (Bash hook), `check-harness.sh`. |
+| Tools | `meta/core/tools/` | `loop.py` (dispatcher loop and hooks), `packet.py` (research packet), `structure.py` (product layout and size), `practices.py` (packs), `guard.py` (Bash and file-write hook; subagents get read-only git and no harness writes), `check-harness.sh`. |
 | init-factory | `.claude/skills/init-factory/` | Configures a clone: brief, screens (GUI only), facets, stack, packs, provision, seed, walking skeleton. Six gates, five without a GUI (`HD-15`). |
 | Screens | `meta/product/screens/`, Backlog doc `product-screens` | Static HTML mockups of a GUI product's screens. Requirements, not code. |
 
