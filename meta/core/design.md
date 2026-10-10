@@ -34,12 +34,15 @@ proposes the stack and practices and the user ratifies them (`HD-5`).
 | Stack | `meta/product/stack.md` | Every command the factory runs. TBD in the template. |
 | Practices | `meta/product/practices/` | Facet packs from the central repo, vendored and locked (`HD-8`). |
 | Tools | `meta/core/tools/` | `packet.py` (research packet), `structure.py` (product layout and size), `practices.py` (packs), `guard.py` (Bash hook), `check-harness.sh`. |
-| init-factory | `.claude/skills/init-factory/` | Configures a clone: brief, facets, stack, packs, provision, seed, walking skeleton. Five gates. |
+| init-factory | `.claude/skills/init-factory/` | Configures a clone: brief, screens (GUI only), facets, stack, packs, provision, seed, walking skeleton. Six gates, five without a GUI (`HD-15`). |
+| Screens | `meta/product/screens/`, Backlog doc `product-screens` | Static HTML mockups of a GUI product's screens. Requirements, not code. |
 
 ## Flow of one task
 
 1. Intake: the orchestrator creates a Backlog task. Each criterion traces to
-   the user's words, or is marked `ASSUMED:` until confirmed.
+   the user's words or a source tag, or is marked `ASSUMED:` until
+   confirmed. A task that adds or changes a screen first updates its mockup
+   and gets the user's confirmation.
 2. Research: `meta/core/tools/packet.py` prints the rules and slice files, with file and line.
 3. Plan: the task's `plan` field. Steps name the slice, files, criteria,
    test command, and the tests the change retires.

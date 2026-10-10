@@ -37,8 +37,23 @@ Otherwise create the task, following `backlog instructions task-creation`:
 
 Source rule, for new and existing tasks: every criterion traces to the
 user's words or carries a source tag from init-factory (`[brief: <field>]`,
-`[pack: <id> <rule>]`). A criterion with neither is prefixed `ASSUMED:` and
-the user confirms it before step 3.
+`[pack: <id> <rule>]`, `[screen: <id>]`). A criterion with neither is
+prefixed `ASSUMED:` and the user confirms it before step 3.
+
+Screens, only when the Backlog doc `product-screens` exists and the task
+adds a screen or changes what one shows or does:
+
+1. Edit or add its mockup in `meta/product/screens/`, by the mockup rules in
+   `.claude/skills/init-factory/phases/screens.md`. Never copy a mockup into
+   the source root.
+2. Show it as that phase's step 3 says. Ask about what it exposes, at most
+   four questions, recommended option first.
+3. After the user confirms it, update the screen's row in `product-screens`
+   and `meta/product/screens/_about.md`. Criteria that follow from the
+   screen carry `[screen: <id>]`. Until the user confirms, those criteria
+   are `ASSUMED:`.
+4. Commit the mockup and catalog with the task id. They count as plan files
+   in step 7.
 
 ## 2. Activate
 
@@ -136,7 +151,7 @@ Commit the tidy run locally.
 1. Run the full test command once. Everything passes.
 2. Run the check command once. It exits 0.
 3. Compare `git diff --name-only <start>..HEAD` with the plan's files, the
-   catalogs, and the test files. Any other file is a deviation: stop and ask
+   catalogs, the screen files from intake, and the test files. Any other file is a deviation: stop and ask
    the user.
 4. If `meta/` or `.claude/` changed, run `meta/core/tools/check-harness.sh`.
 

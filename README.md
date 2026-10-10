@@ -13,9 +13,9 @@ GhostInside is a template. Each product is a clone of it.
    clone, not the GitHub template button, so harness upgrades can merge).
 3. In the clone, write the idea to `CONCEPT.md` and run `/init-factory` in
    Claude Code. It renames `origin` to `harness`, adds your repository as
-   `origin`, and walks you through five gates: brief, facets, stack and
-   architecture, practice packs, provision and seed. It ends with a green
-   walking skeleton.
+   `origin`, and walks you through six gates: brief, screens (mockups,
+   only for a product with a GUI), facets, stack and architecture, practice
+   packs, provision and seed. It ends with a green walking skeleton.
 4. Promote a draft (`backlog draft promote <id>`) and ask Claude to run the
    orchestrator on it (`meta/core/guides/orchestrate.md`).
 

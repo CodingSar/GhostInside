@@ -16,7 +16,7 @@ core_paths="meta/core meta/_about.md AGENTS.md CLAUDE.md .claude/skills/init-fac
 
 # 1. Every harness path named by agents, skills, guides, or catalogs exists.
 #    Product files that exist only after init-factory, or only on override, are optional.
-optional='^meta/product/(architecture\.md|persistence\.md|overlays/|practices/packs/)'
+optional='^meta/product/(architecture\.md|persistence\.md|overlays/|practices/packs/|screens/)'
 refs=$(grep -rhoE '(meta|\.claude)/[A-Za-z0-9_./-]+\.(md|sh|py|yml|json)' \
   AGENTS.md .claude/agents .claude/skills meta/_about.md meta/core/guides meta/core/defaults \
   meta/core/decisions.md meta/core/design.md meta/product 2>/dev/null | sort -u)

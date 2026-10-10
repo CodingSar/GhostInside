@@ -14,6 +14,7 @@ concept, to a user answer, or is marked `ASSUMED:`.
 | scale | How many users, how much data, what load, at launch and in a year? |
 | data sensitivity and compliance | Personal, financial, health, or regulated data? Which regimes apply? |
 | deploy target | Where does it run: cloud, on-prem, device, desktop, CLI on user machines? |
+| interface | How do users reach it: web UI, mobile app, desktop GUI, CLI, API only, library? Web UI, mobile app, and desktop GUI count as a GUI; the screens phase runs only for a GUI. |
 | integrations | Which external systems does it talk to, and how? |
 | non-goals | What is explicitly out of scope? |
 | language preference | Any language, framework, or hosting the team requires or refuses? |

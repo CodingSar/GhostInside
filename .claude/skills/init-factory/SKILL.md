@@ -1,6 +1,6 @@
 ---
 name: init-factory
-description: Configure a cloned GhostInside harness for one product. Turns CONCEPT.md into a ratified brief, facets, stack, vendored practice packs, a provisioned environment, a seeded backlog, and a green walking skeleton. Re-run on an initialized clone to amend after the concept changes. Use when the user runs /init-factory or asks to initialize, set up, or amend the factory for a product.
+description: Configure a cloned GhostInside harness for one product. Turns CONCEPT.md into a ratified brief, screen mockups (GUI products), facets, stack, vendored practice packs, a provisioned environment, a seeded backlog, and a green walking skeleton. Re-run on an initialized clone to amend after the concept changes. Use when the user runs /init-factory or asks to initialize, set up, or amend the factory for a product.
 ---
 
 # init-factory
@@ -10,7 +10,7 @@ the Haiku workers in `.claude/agents/`; they need a configured harness, which
 is what this skill builds. Research subagents and the deep-research skill are
 allowed where a phase file says so.
 
-Design: `HD-4` to `HD-14` in `meta/core/decisions.md`. Your task is the init
+Design: `HD-4` to `HD-15` in `meta/core/decisions.md`. Your task is the init
 task from step 1, in the root `backlog/` (the product backlog). The harness
 backlog in `meta/core/backlog/` is template history; never change it.
 
@@ -72,7 +72,7 @@ backlog in `meta/core/backlog/` is template history; never change it.
 5. `CONCEPT.md` at the repo root. If missing on a first run, ask the user to
    paste the concept and write it verbatim to `CONCEPT.md`.
 6. `gh auth status`. If not logged in, say that pack PRs and the CI check
-   will be skipped and reported, and that criterion 8 then stays unchecked.
+   will be skipped and reported, and that criterion 9 then stays unchecked.
 
 ## 1. Find or create the init task
 
@@ -92,12 +92,13 @@ these criteria, in order:
 
 1. `Preflight passed: harness remote with shared history`
 2. `Brief ratified and stored as Backlog doc product-brief`
-3. `Domain and concern facets ratified`
-4. `Stack and architecture ratified: stack.md has no TBD, decisions recorded in init-decisions`
-5. `Practice packs ratified, vendored, locked and compiled; new packs proposed upstream`
-6. `Environment provisioned and stack overlays written`
-7. `Backlog seeded with milestones and draft slices`
-8. `Walking skeleton green: install, migrations, check command, full tests, check-harness, CI`
+3. `Screens ratified and stored as Backlog doc product-screens, or n/a without a GUI`
+4. `Domain and concern facets ratified`
+5. `Stack and architecture ratified: stack.md has no TBD, decisions recorded in init-decisions`
+6. `Practice packs ratified, vendored, locked and compiled; new packs proposed upstream`
+7. `Environment provisioned and stack overlays written`
+8. `Backlog seeded with milestones and draft slices`
+9. `Walking skeleton green: install, migrations, check command, full tests, check-harness, CI`
 
 Then `backlog task edit <id> -s "In Progress" -a @claude`, and
 `backlog config set projectName "<product name>"`. Check criterion 1 with
@@ -112,12 +113,13 @@ For each unchecked criterion, in order:
 | Criterion | Phase file | Gate |
 |---|---|---|
 | 2 | `.claude/skills/init-factory/phases/brief.md` | brief |
-| 3 | `.claude/skills/init-factory/phases/facets.md` | facets |
-| 4 | `.claude/skills/init-factory/phases/stack.md` | stack and architecture |
-| 5 | `.claude/skills/init-factory/phases/practices.md` | packs |
-| 6 | `.claude/skills/init-factory/phases/provision.md` | provision and seed (shared) |
-| 7 | `.claude/skills/init-factory/phases/seed.md` | provision and seed (shared) |
-| 8 | `.claude/skills/init-factory/phases/skeleton.md` | none: the evidence is deterministic |
+| 3 | `.claude/skills/init-factory/phases/screens.md` | screens (none when the product has no GUI) |
+| 4 | `.claude/skills/init-factory/phases/facets.md` | facets |
+| 5 | `.claude/skills/init-factory/phases/stack.md` | stack and architecture |
+| 6 | `.claude/skills/init-factory/phases/practices.md` | packs |
+| 7 | `.claude/skills/init-factory/phases/provision.md` | provision and seed (shared) |
+| 8 | `.claude/skills/init-factory/phases/seed.md` | provision and seed (shared) |
+| 9 | `.claude/skills/init-factory/phases/skeleton.md` | none: the evidence is deterministic |
 
 Read the phase file. Do its steps. Hold its gate. Write its outputs. Then:
 
@@ -126,13 +128,14 @@ Read the phase file. Do its steps. Hold its gate. Write its outputs. Then:
 2. `backlog task edit <id> --append-notes "criterion <n>: <outputs>; evidence: <evidence>"`.
 3. Commit and `git push origin main`.
 
-Provision and seed share one gate: before writing anything for criterion 6,
+Provision and seed share one gate: before writing anything for criterion 7,
 draft the provision files and the seed drafts, show both in one table, and
 after acceptance run both phases without another gate.
 
 ## Gate
 
-Five gates in all (`HD-5`). Show one table:
+Six gates in all (`HD-5`, `HD-15`), five when the product has no GUI. Show
+one table:
 
 | # | Item | Proposal | Why | Rejected alternatives |
 |---|---|---|---|---|
@@ -186,8 +189,8 @@ and report it at the end.
 
 ## Finish
 
-After criterion 8: follow `backlog instructions task-finalization`. Final
-summary: the product brief doc id, decisions created, packs vendored and PRs
+After criterion 9: follow `backlog instructions task-finalization`. Final
+summary: the product brief and product screens doc ids, decisions created, packs vendored and PRs
 opened (or not opened), files provisioned, drafts seeded, skeleton evidence.
 Set Done. Tell the user the next step: promote a draft
 (`backlog draft promote <id>`) and run the orchestrator

@@ -22,7 +22,8 @@ stack phase, one per ratified stack item, because they follow from it.
 2. From `product-brief`, derive candidates:
    - one `domain/` facet per distinct field the core jobs work in;
    - one `concern/` facet per brief field that raises a concern: data
-     sensitivity and compliance, deploy target, integrations, scale.
+     sensitivity and compliance, deploy target, interface (a GUI raises
+     `concern/accessibility`), integrations, scale.
 3. Reuse an existing central id whenever it means the same thing. Name a new
    id only when nothing in the index fits.
 4. At most eight facets. More: propose which to merge or drop.
