@@ -12,6 +12,7 @@ bad() { echo "FAIL: $*"; fail=1; }
 
 # Template-owned paths (HD-9). In a product clone they never change.
 core_paths="meta/core meta/_about.md AGENTS.md CLAUDE.md .claude/skills/init-factory
+  .claude/agents/intake.md .claude/agents/planner.md .claude/agents/researcher.md
   .claude/agents/test-writer.md .claude/agents/implementer.md"
 
 # 1. Every harness path named by agents, skills, guides, or catalogs exists.
@@ -39,6 +40,7 @@ for agent in .claude/agents/*.md; do
     grep -q '^model: claude-haiku-5-5$' "$agent" || bad "$agent is not on claude-haiku-5-5"
   fi
   grep -qE 'meta/(core/guides|product)/' "$agent" || bad "$agent names no guide"
+  grep -qE '^maxTurns: [0-9]+$' "$agent" || bad "$agent sets no maxTurns"
 done
 
 # 3b. Every loop agent exists, reads its loop guide, and the guide ends in RETURN lines.
@@ -83,16 +85,18 @@ if git rev-parse -q --verify harness/main >/dev/null 2>&1; then
     # shellcheck disable=SC2086
     changed=$(git diff --name-only "$base" -- $core_paths)
     [ -z "$changed" ] || bad "template-owned paths changed in this clone (change them in the template): $changed"
-    # Deny entries and hooks in settings.json are template-owned; allow entries are not.
+    # Deny entries, hooks, and the main-thread model in settings.json are
+    # template-owned; allow entries are not.
     git show "$base:.claude/settings.json" 2>/dev/null | python3 -I -c '
 import json, sys
 base, now = json.load(sys.stdin), json.load(open(".claude/settings.json"))
 deny = lambda s: sorted(s.get("permissions", {}).get("deny", []))
 missing = sorted(set(deny(base)) - set(deny(now)))
-if missing or base.get("hooks") != now.get("hooks"):
-    print("deny entries removed: %s; hooks changed: %s" % (missing, base.get("hooks") != now.get("hooks")))
+hooks, model = base.get("hooks") != now.get("hooks"), base.get("model") != now.get("model")
+if missing or hooks or model:
+    print("deny entries removed: %s; hooks changed: %s; model changed: %s" % (missing, hooks, model))
     sys.exit(1)
-' || bad "settings.json deny entries or hooks differ from the harness version"
+' || bad "settings.json deny entries, hooks, or model differ from the harness version"
   fi
 fi
 
