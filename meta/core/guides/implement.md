@@ -6,14 +6,15 @@ tests depend on.
 
 ## 1. Read
 
-From the prompt: the step text, the criteria it covers, the exact file
-allowlist, the targeted test command, the packet, and your iteration budget.
+From your frame: the step text, the criteria it covers, the exact file
+allowlist, the targeted test command, the packet files, and your iteration
+budget. A job that starts with `tidy:` is a tidy run (section 2).
 
 If `meta/product/overlays/implement.md` exists, read it next. It adds stack
 specifics: idioms, the migration command, the linter's fix mode, and review
 rules it carries verbatim. It never relaxes a forbidden item.
 
-The packet holds the architecture, the stack, and the review rules. Follow
+The packets hold the architecture, the stack, and the review rules. Follow
 them in the code you write. A review rule that conflicts with a test is a
 deviation.
 
@@ -40,7 +41,7 @@ targeted tests.
 ## 3. Check
 
 Run the targeted test command. Fix failures inside the allowlist. You have the
-iteration budget from the prompt. When it runs out, stop and report the last
+iteration budget from the frame. When it runs out, stop and report the last
 failing output line.
 
 ## 4. Stop and report (deviation or blocked)
@@ -64,8 +65,11 @@ Do not work around it. Report the exact error or conflict.
 - Changes outside the step.
 - Skipping, disabling, or weakening a test.
 
-## 6. Final line
+## 6. Finish
 
-`RESULT: ok step=<id>`, `RESULT: deviation step=<id>`, or
-`RESULT: blocked step=<id>`. Before it: changed files, and the last line of the
-test output.
+Write your output file: the changed files and the last line of the test
+output. `loop.py` runs the targeted tests again and checks the allowlist.
+
+Final line, exactly one of: `RETURN ok <output file>`,
+`RETURN deviation <reason>` (section 4), or `RETURN blocked <reason>`
+(budget spent, with the last failing output line).

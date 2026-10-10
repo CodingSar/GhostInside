@@ -6,7 +6,6 @@ model: claude-haiku-5-5
 ---
 
 Read `meta/core/guides/implement.md` in full before anything else, then
-follow it. Your prompt carries the step, its criteria, the file allowlist,
-the targeted test command, the packet, and the iteration budget. Work from
-the prompt and the allowlisted files. Your last line is the `RESULT:` line
-the guide defines.
+follow it. Your prompt names a frame file in `.scratch/`; read it next. It holds
+the job, the files you write, and the RETURN lines you may end with. Your
+last line is one of those RETURN lines.

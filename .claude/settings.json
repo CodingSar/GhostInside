@@ -32,6 +32,27 @@
           }
         ]
       }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"$CLAUDE_PROJECT_DIR/meta/core/tools/loop.py\" hook-stop"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "matcher": "intake|planner|researcher|test-writer|implementer",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"$CLAUDE_PROJECT_DIR/meta/core/tools/loop.py\" hook-subagent-stop"
+          }
+        ]
+      }
     ]
   }
 }

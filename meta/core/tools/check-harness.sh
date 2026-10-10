@@ -29,12 +29,33 @@ if grep -rn 'claude -p' .claude meta --include='*.md' --exclude-dir=backlog; the
   bad "headless launch reference found (see above)"
 fi
 
-# 3. Every worker runs on Haiku for now, and names the guide it reads first
-#    (a core guide, or a product guide for workers init-factory adds).
+# 3. Every agent runs on Haiku, except the researcher (HD-16), and names the
+#    guide it reads first (a core guide, or a product guide for workers
+#    init-factory adds).
 for agent in .claude/agents/*.md; do
-  grep -q '^model: claude-haiku-5-5$' "$agent" || bad "$agent is not on claude-haiku-5-5"
+  if [ "$agent" = .claude/agents/researcher.md ]; then
+    grep -qE '^model: claude-(sonnet|opus)-' "$agent" || bad "$agent is not on a research model"
+  else
+    grep -q '^model: claude-haiku-5-5$' "$agent" || bad "$agent is not on claude-haiku-5-5"
+  fi
   grep -qE 'meta/(core/guides|product)/' "$agent" || bad "$agent names no guide"
 done
+
+# 3b. Every loop agent exists, reads its loop guide, and the guide ends in RETURN lines.
+python3 -I - <<'PY' || bad "loop agents and guides do not match loop.py (see above)"
+import ast, pathlib, sys
+src = pathlib.Path("meta/core/tools/loop.py").read_text()
+guides = next(ast.literal_eval(n.value) for n in ast.walk(ast.parse(src))
+              if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "GUIDES")
+ok = True
+for agent, guide in guides.items():
+    a, g = pathlib.Path(f".claude/agents/{agent}.md"), pathlib.Path(guide)
+    if not a.exists() or guide not in a.read_text():
+        print(f"{a} missing or does not name {guide}"); ok = False
+    if not g.exists() or "RETURN ok" not in g.read_text():
+        print(f"{guide} missing or has no RETURN ok line"); ok = False
+sys.exit(0 if ok else 1)
+PY
 
 # 4. Vendored practice packs match their lock.
 if [ -f meta/product/practices/practices.lock ]; then

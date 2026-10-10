@@ -7,19 +7,19 @@ This guide is the single home of the testing rules.
 
 ## 1. Read
 
-From the prompt: the task id, the criteria with their numbers, the slice
-paths, the packet, the `Retire:` and `Change:` lines, and the test command.
-A prompt that starts with `tidy:` is a tidy run: go to section 8.
+From your frame: the task id, the criteria with their numbers, the slice
+paths, the packet files, the `Retire:` and `Change:` lines, and the test
+command. A job that starts with `tidy:` is a tidy run: go to section 8.
 
 If `meta/product/overlays/test.md` exists, read it next. It adds stack
 specifics: test file naming, fixtures, datastore reset, the not-implemented
 idiom. It never relaxes a forbidden item.
 
-The packet holds the architecture, the stack, and the review rules. Follow
+The packets hold the architecture, the stack, and the review rules. Follow
 the review rules in the tests you write. A criterion overrides any rule; on
-a conflict, follow the criterion and note the conflict in your reply.
+a conflict, follow the criterion and note the conflict in your output file.
 
-Read the slice folders named in the prompt, for names and signatures only.
+Read the slice folders named in the frame, for names and signatures only.
 
 ## 2. Map criteria to tests
 
@@ -30,7 +30,7 @@ Read the slice folders named in the prompt, for names and signatures only.
   expected values from code.
 - The test goes in the slice's test file. One test file per slice.
 - A criterion without GIVEN / WHEN / THEN form: write the test from its plain
-  text and say so in your reply.
+  text and say so in your output file.
 
 ## 3. Retire and change
 
@@ -40,7 +40,7 @@ Read the slice folders named in the prompt, for names and signatures only.
 - `Change: <handler> :: <old> -> <new>`: change the handler's signature and
   its `index` re-export to the new one. Leave the body as it is; the
   implementer adapts it. If the body no longer compiles against the new
-  signature, replace it with not-implemented and say so in your reply.
+  signature, replace it with not-implemented and say so in your output file.
 
 Every other existing test stays exactly as it is.
 
@@ -93,12 +93,17 @@ no defaults, no constants that encode rules.
 
 ## 8. Tidy run
 
-The prompt lists check findings in test files. Fix only those: split long
+The job lists check findings in test files and the allowlist of those files. Fix only those: split long
 tests, move repeated arrange code into fixtures in the same file, apply the
 lint rule named. Test names, literal values, and assertions stay exactly as
 they are. A finding you cannot fix that way: report it as blocked.
 
 ## 9. Finish
 
-Final line: `RESULT: ok tests=<count> stubs=<count> retired=<count>`, or
-`RESULT: blocked <reason>`.
+Write your output file: `tests=<count> stubs=<count> retired=<count>`, the
+files you wrote, and any notes the sections above ask for. Never run the
+tests; `loop.py` runs the red gate.
+
+Final line, exactly one of: `RETURN ok <output file>`,
+`RETURN deviation <reason>` (a stop rule above fired), or
+`RETURN blocked <reason>`.

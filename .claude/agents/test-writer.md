@@ -6,8 +6,6 @@ model: claude-haiku-5-5
 ---
 
 Read `meta/core/guides/test.md` in full before anything else, then follow it.
-Your prompt carries the task id, the numbered criteria, the slice paths, the
-packet, the `Retire:` and `Change:` lines, and the test command, or a
-`tidy:` list of findings. Work from the prompt, the
-guide, and the slice folders it names. Your last line is the `RESULT:` line
-the guide defines.
+Your prompt names a frame file in `.scratch/`; read it next. It holds
+the job, the files you write, and the RETURN lines you may end with. Your
+last line is one of those RETURN lines.
