@@ -2,11 +2,7 @@
   "permissions": {
     "allow": [
       "Bash(groma:*)",
-      "Bash(npm:*)",
-      "Bash(npx:*)",
-      "Bash(node:*)",
       "Bash(python3:*)",
-      "Bash(make:*)",
       "Bash(git:*)",
       "Bash(gh:*)",
       "Edit",
@@ -25,7 +21,17 @@
       "Write(~/.claude/settings.json)"
     ]
   },
-  "env": {
-    "CAVEMAN_DEFAULT_MODE": "ultra"
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"$CLAUDE_PROJECT_DIR/meta/core/tools/guard.py\""
+          }
+        ]
+      }
+    ]
   }
 }

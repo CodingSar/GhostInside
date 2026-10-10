@@ -7,7 +7,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:10'
+updated_date: '2026-10-10 09:12'
 labels: []
 dependencies: []
 modified_files:
@@ -64,6 +64,9 @@ modified_files:
     Harness-v2-core-product-layers-modular-slice-architecture-deterministic-packet.md
   - meta/core/tools/packet.py
   - meta/core/tools/test_packet.py
+  - >-
+    meta/core/backlog/decisions/decision-14 -
+    init-factory-five-gates-per-HD-5-provision-and-seed-share-one-skeleton-has-none-one-stack-decision-instead-of-one-per-row.md
 priority: high
 type: enhancement
 ordinal: 5000
@@ -113,4 +116,6 @@ step 2: meta split into core/ (guides, defaults, tools, decisions.md, design.md,
 step 3: architecture.md rewritten (modules > slices, app/, shared/, catalogs, import rules, forbidden names, caps); persistence.md per-module tables; structure.py + test_structure.py (9 tests green); HD-11 / decision-11.
 
 step 4: packet.py + test_packet.py (6 tests) replace searcher (HD-12); orchestrate/test/implement guides rewritten: packet, retire list, catalogs after test-first, tidy step, TASK-n#k names, real datastore from stack.md (HD-13); generic testing practice merged into test.md and deleted; search.md, searcher agent removed; agents reduced to pointer to guide; stack.md gains source root, extensions, test file pattern, check command rows; __pycache__ untracked and ignored.
+
+step 5: init-factory: product layer paths, never-change list = meta/core + core agents/skill/AGENTS/CLAUDE; five gates (provision+seed shared, skeleton none), one stack decision (HD-14); stack phase proposes boundary, duplication, dead-code checkers and writes scripts/check.sh with structure.py; practices append check-cmd rules to check.sh; provision writes README and overlays with TASK-n#k idiom; seed proposes modules and module/slice drafts labelled module:<m>; skeleton is a health module with app/ wiring.
 <!-- SECTION:NOTES:END -->
