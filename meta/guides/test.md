@@ -1,69 +1,65 @@
-# Tester how-to
+# Test-writer how-to
 
-Goal: the fewest tests that pin the plan's business rules, written before the
-implementation exists. Tests are the spec. The executor must make them pass
-without changing them.
+Goal: one failing test per acceptance criterion, plus the signature-only stubs
+those tests call. Written before any implementation exists. The criteria are
+the spec; the implementer must make the tests pass without changing them.
 
 ## 1. Read
 
-- The plan: its `cases` block and file list.
-- The test packet, in this order:
-  1. `practices` for `testing`: the rules, with their tier. Apply them first.
-  2. `registry` for `testing`: the runner and version. Tests use only this.
-  3. `invariants` and `patterns` for each unit kind.
-- The stubs for the units under test: names, signatures, types. Nothing else.
+From the prompt: the task id, the criteria with numbers, the slice path, the
+testing packet, and the test command.
 
-Tier rules:
+Apply the testing packet first. Domain rules replace generic rules for the
+same topic. A criterion overrides any practice; if a practice conflicts with a
+criterion, follow the criterion and note the conflict in your reply.
 
-- `tier: domain` practice replaces the generic rule for the same topic. Where
-  the domain practice is silent, the generic rule applies.
-- A plan case overrides any practice. If a practice conflicts with a case,
-  follow the case and note the conflict in your report.
-- Do not add practices the packet does not list.
+Read the slice folder if it exists, for names and existing signatures only.
 
-## 2. Map cases to tests
+## 2. Map criteria to tests
 
-- One test per case. The case id is in the test name, e.g.
-  `test_case_price_discount_03_...`.
-- Cases are the only source of expected behaviour. Copy the given / when /
-  then values into the test. Do not add rules.
-- Parametrize only when cases differ by input alone and share one assertion.
-  Each row keeps its own case id.
+- One test per criterion. The criterion number is in the test name, for
+  example `AC2 discounts apply once per order`.
+- Copy the GIVEN / WHEN / THEN values into the test as literals. Do not
+  derive expected values from code.
+- Put tests in the slice's `tests/` folder. One file per slice entry point.
+- Criterion without GIVEN / WHEN / THEN form: write the test from its plain
+  text and say so in your reply.
 
-## 3. Test business logic
+## 3. Shape of the test
 
-- Assert outcomes: returned values, state changes visible through the public
-  interface, or the domain error raised.
-- Call the unit through its stub signature only. Do not reach into private
-  helpers.
-- Mock only external boundaries (clock, randomness, network, storage). Never
-  mock the rule under test.
-- No sleeps, no real network, no wall-clock time, no random without a seed.
+- Prefer end-to-end style for behaviour: call the slice's entry file, use a
+  real PostgreSQL database through the connection in
+  `meta/registry/persistence.md`, and assert the returned value or the state
+  you can read back.
+- Pure rules may use direct unit calls.
+- Never mock the database. Mock only the clock, randomness, and network.
+- No sleeps. No wall-clock time without an injected clock.
+- Call only the entry file's public signature. No private helpers.
 
-## 4. Keep it minimal
+## 4. Stubs
 
-- No test for a stub's existence, a getter, a constructor, or framework code.
-- No test for repository or adapter plumbing unless the plan lists a case for
-  it.
-- No duplicate tests across cases. If two cases expect the same thing, the
-  plan is wrong: stop and report.
-- Boundary tests only when the plan lists them as cases.
+Create the signatures the tests call, with typed inputs and outputs. The body
+raises not-implemented in the language's idiom. Nothing else: no logic, no
+defaults, no constants that encode rules.
 
-## 5. Red check expectation
+## 5. Keep it minimal
 
-Each test must fail for the stub's reason: `NotImplementedError` or a failing
-assertion on the case's expected value. A test that cannot even import, or
-that passes, is a defect. Write it so the failure is the expected one. The
-orchestrator checks this after you finish.
+- No test for a stub's existence, a getter, a constructor, or wiring.
+- Two criteria that expect the same thing: stop and report the duplicate.
+- A criterion that cannot be expressed through the public signature: stop and
+  report it. Do not invent a substitute.
 
-## 6. Finish
+## 6. Forbidden
 
-Append test file paths to the plan's file list. Print the `RESULT` line.
-
-## Forbidden
-
-- Skip, xfail, pending, or todo markers.
-- Tests that assert on `NotImplementedError` as a pass.
-- Editing stubs or source to make imports work.
+- Skip, todo, pending, or xfail markers.
+- Tests that pass on not-implemented.
+- Edits to logic, or to files outside the slice's `tests/` folder and its stub
+  entry file.
 - Snapshot tests of unspecified output.
-- Asserting internal call counts or call order.
+- Asserting internal call counts or order.
+- Adding a criterion, or a rule the criteria do not state.
+
+## 7. Finish
+
+Final line: `RESULT: ok tests=<count> stubs=<count>`, or
+`RESULT: blocked <reason>`.

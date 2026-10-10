@@ -1,36 +1,43 @@
 # Testing practice (generic)
 
-Fallback used when no domain-specific testing practice exists. Domain files
-override these rules where they conflict.
+Fallback used when no domain-specific testing rule exists. Domain files
+replace these rules for the same topic.
 
-## What to test
+## Tests are the acceptance criteria
 
-- Business rules and their outcomes. Not wiring, not framework code.
-- Test through the unit's public interface. Assert returned values, visible
-  state, or the error raised.
-- One test per rule or case. Name it after the behaviour it pins.
+- One test per acceptance criterion of the Backlog task. The criterion number
+  is in the test name: `AC<n>`.
+- Given / when / then values are literals in the test. Expected values are
+  never derived from the code under test.
+- Criteria are the only source of expected behaviour. A test that pins a rule
+  no criterion states is a defect.
 
-## How to write a test
+## Level
 
-- Arrange, act, assert. One act per test.
-- Each test is independent. No shared mutable state, no order dependency.
-- Use the case's given values as literals. Do not derive expected values
-  from the code under test.
-- Keep assertions to what the rule says. No snapshot of unspecified output.
+- Behaviour tests are end-to-end style: call the slice's `index` entry point,
+  use the real datastore, assert the returned value or the state read back
+  through the same interface.
+- Pure rules, with no I/O, may be unit tests.
+- A criterion that spans two slices is tested through the entry point of the
+  slice the user acts on.
 
 ## Doubles
 
-- Replace only external boundaries: clock, randomness, network, storage.
-- Never replace the unit or rule under test.
-- Do not assert internal call counts or order.
+- Mock only external boundaries: clock, randomness, network.
+- Never mock the database (see `meta/registry/persistence.md`).
+- Never mock the unit under test.
+- Do not assert internal call counts or call order.
 
 ## Determinism
 
-- No sleeps, real network, or wall-clock time.
-- Seed any randomness. Inject time.
+- No sleeps. No real network. No wall-clock time without an injected clock.
+- Seed any randomness.
+- Each test is independent: no shared mutable state, no order dependency.
+  Reset the datastore state each test in the way the runner defines.
 
 ## Failure quality
 
-- A failing test names the case it pins. Its message states expected and
-  actual values.
+- Arrange, act, assert. One act per test.
+- A failing test names its criterion. Its message gives expected and actual
+  values.
 - A test that passes for the wrong reason is a defect.

@@ -1,7 +1,7 @@
 ---
-description: Best-practice guides per practice topic and domain. Domain-specific rows win; generic rows are the fallback.
-keys: practices, domain
+description: Best-practice rules per topic and domain. A domain row wins; the generic row is the fallback.
 ---
-| practice | domain | file | description |
+
+| Practice | Domain | File | What it covers |
 |---|---|---|---|
-| testing | generic | generic/testing.md | Test design: behaviour through public interface, one test per rule, deterministic, boundary-only mocks |
+| testing | generic | `generic/testing.md` | Acceptance-criteria tests, end-to-end style through slice entry points, real PostgreSQL, boundary-only mocks |
