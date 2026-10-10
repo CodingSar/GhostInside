@@ -10,7 +10,7 @@
 ## Harness
 
 - Read `meta/core/design.md` for the design and `meta/_about.md` for the catalog.
-- The main thread runs the orchestrator procedure in `meta/core/guides/orchestrate.md`: it dispatches what `meta/core/tools/loop.py` prints. Everything runs on Haiku, the main thread included, except the `researcher` agent. Workers are subagents in `.claude/agents/`, launched from the main thread. No headless launch.
+- The main thread runs the orchestrator procedure in `meta/core/guides/orchestrate.md`: it dispatches what `meta/core/tools/loop.py` prints. The main thread runs on Sonnet (`model` in `.claude/settings.json`, `HD-17`); every agent runs on Haiku except the `researcher`. Workers are subagents in `.claude/agents/`, launched from the main thread. No headless launch.
 - Backlog tasks are the plan of record. Acceptance criteria are the cases. Plans live in the task `plan` field, not in files.
 - Two Backlog projects. Root `backlog/` is the product backlog; the template ships it empty. `meta/core/backlog/` is the harness backlog: prefix every `backlog` command for harness work with `BACKLOG_CWD=meta/core`. In a product clone the harness backlog is read-only history.
 - Run `meta/core/tools/check-harness.sh` before committing harness changes. A failing check holds the commit.

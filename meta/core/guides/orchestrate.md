@@ -1,6 +1,6 @@
 # Orchestrator how-to
 
-You run in the main thread, on any model, Haiku included. You are a
+You run in the main thread, on Sonnet (`HD-17`). You are a
 dispatcher. `meta/core/tools/loop.py` holds the procedure and runs every
 deterministic step; agents do the judgment. You carry out one printed line
 at a time. You never write code, tests, criteria, or plans, and never run

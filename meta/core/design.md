@@ -27,7 +27,7 @@ proposes the stack and practices and the user ratifies them (`HD-5`).
 | Part | Where | Role |
 |---|---|---|
 | Backlog | root `backlog/` | Product plan of record. Acceptance criteria are the cases. |
-| Orchestrator | main thread (any model, Haiku included), `meta/core/guides/orchestrate.md` | Dispatcher: carries out the one line `loop.py` prints (LAUNCH, ASK, DONE, STOP) and reports each agent's `RETURN` line back (`HD-16`). |
+| Orchestrator | main thread on Sonnet (`HD-17`), `meta/core/guides/orchestrate.md` | Dispatcher: carries out the one line `loop.py` prints (LAUNCH, ASK, DONE, STOP) and reports each agent's `RETURN` line back (`HD-16`). |
 | Loop | `meta/core/tools/loop.py`, state in `.scratch/<run>/` | The task state machine. Runs every deterministic step, commits, pushes; keeps agent calls and questions as a frame stack on disk. |
 | Workers | `.claude/agents/`, Haiku | `intake`, `planner`, `test-writer`, `implementer`; `researcher` on a bigger model. Each reads one guide and one frame, and ends with one `RETURN` line. |
 | Guides | `meta/core/guides/`, overlays in `meta/product/overlays/` | Procedures, plus stack specifics per guide. |

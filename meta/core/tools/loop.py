@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Dispatcher loop: run one Backlog task through the factory on a Haiku main thread.
+"""Dispatcher loop: run one Backlog task through the factory from a thin main thread.
 
 The main thread is a trampoline (HD-16). It runs `loop.py next` and does
 exactly what the one printed line says:

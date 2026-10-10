@@ -4,6 +4,7 @@ title: init-factory on the dispatcher loop
 status: To Do
 assignee: []
 created_date: '2026-10-10 16:18'
+updated_date: '2026-10-10 16:22'
 labels:
   - init-factory
   - orchestrator
@@ -28,3 +29,9 @@ TASK-7 moved the orchestrator onto loop.py so a Haiku main thread only dispatche
 - [ ] #4 An interrupted init resumes from .scratch state and the init task
 - [ ] #5 `check-harness.sh` passes and the loop tests cover the init states
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+HD-17 (2026-10-10): main thread is Sonnet, not Haiku. The Haiku-only motivation in the description no longer applies; moving init-factory onto the loop still pays for bounded context and resume after /clear. Re-scope before starting.
+<!-- SECTION:NOTES:END -->
