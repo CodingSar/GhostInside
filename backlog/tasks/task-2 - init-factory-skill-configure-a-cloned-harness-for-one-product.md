@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 08:20'
-updated_date: '2026-10-10 08:34'
+updated_date: '2026-10-10 08:38'
 labels: []
 dependencies: []
 references:
@@ -27,6 +27,17 @@ modified_files:
   - meta/practices/practices.lock
   - meta/practices/review.md
   - meta/practices/enforced.md
+  - .claude/skills/init-factory/SKILL.md
+  - .claude/skills/init-factory/phases/brief.md
+  - .claude/skills/init-factory/phases/facets.md
+  - .claude/skills/init-factory/phases/stack.md
+  - .claude/skills/init-factory/phases/practices.md
+  - .claude/skills/init-factory/phases/provision.md
+  - .claude/skills/init-factory/phases/seed.md
+  - .claude/skills/init-factory/phases/skeleton.md
+  - meta/tools/check-harness.sh
+  - meta/_about.md
+  - PLAN.md
 priority: high
 type: feature
 ordinal: 2000
@@ -81,4 +92,8 @@ Note: step 4 tests are committed as meta/tools/test_practices.py (temp dirs, loc
 step 4: practices.py fetch/status/check/vendor/verify/propose; 7 unittest cases green; fetch+status against real central: 6acaf49, both facets miss (empty index).
 
 steps 5-6: searcher topic practices:review (search.md, searcher agent, orchestrator step 3), review rules passed to test-writer and implementer; overlay hook line in orchestrate/test/implement; meta/guides/stack/_about.md; practices/_about.md documents packs, lock, review.md, enforced.md. vendor accepts an empty set; template ships empty vendored state (lock at central 6acaf49), verify ok.
+
+steps 1-3, 7-8: SKILL.md (preflight template guard + shared history, init/resume/amend via label init-factory, 8 phase ACs, gate format, decisions + init-decisions doc, stop rules) and phases/{brief,facets,stack,practices,provision,seed,skeleton}.md. Facets phase covers domain/concern only; stack phase adds lang/framework/datastore facets, since they follow from the stack choice. Seed uses task create --draft (draft create lacks --ac/-m).
+step 9: check-harness scans .claude/skills refs, runs practices.py verify when lock exists, runs test_practices.py, fails on TBD once runner.md Status is no longer TBD (marker is the Status line, not the init task state, so the check needs no Backlog parsing). Negative cases verified: TBD with set status, edited review.md, broken skill path each FAIL.
+step 10: meta/_about.md, PLAN parts row.
 <!-- SECTION:NOTES:END -->

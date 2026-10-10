@@ -22,6 +22,7 @@ domain practices and the user ratifies them.
 | Guides | `meta/guides/` | Procedures. Core guides are written by a human and owned by the template. `init-factory` writes stack overlays in `meta/guides/stack/` only. |
 | Defaults | `meta/architecture/`, `meta/registry/` | Vertical slices. PostgreSQL only. Runner TBD. Defaults are priors that `init-factory` may supersede by a ratified decision. |
 | Practices | `meta/practices/` | Testing rules. `init-factory` vendors facet packs from the central repo `CodingSar/GhostInsidePractices` and pins them in `practices.lock`. |
+| init-factory | `.claude/skills/init-factory/` | Main-thread skill run once per product clone, re-run to amend. Brief, facets, stack, packs, provision, seed, walking skeleton. Gated by user ratification. |
 | Checks | `meta/tools/check-harness.sh` | Deterministic checks on the harness itself. |
 
 ## Flow

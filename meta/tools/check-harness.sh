@@ -12,7 +12,7 @@ bad() { echo "FAIL: $*"; fail=1; }
 
 # 1. Every harness path named by agents, guides, or catalogs exists.
 refs=$(grep -rhoE '(meta|\.claude)/[A-Za-z0-9_./-]+\.(md|sh|yml|json)' \
-  .claude/agents meta/guides meta/_about.md meta/architecture meta/registry meta/practices 2>/dev/null \
+  .claude/agents .claude/skills meta/guides meta/_about.md meta/architecture meta/registry meta/practices 2>/dev/null \
   | sort -u)
 for ref in $refs; do
   [ -e "$ref" ] || bad "referenced path missing: $ref"
@@ -37,6 +37,19 @@ done
 for agent in .claude/agents/*.md; do
   grep -q 'meta/guides/' "$agent" || bad "$agent names no guide"
 done
+
+# 6. Vendored practice packs match their lock, and the pack helper passes its tests.
+if [ -f meta/practices/practices.lock ]; then
+  python3 -I meta/tools/practices.py verify >/dev/null || bad "practices.py verify failed"
+fi
+python3 -I meta/tools/test_practices.py >/dev/null 2>&1 || bad "meta/tools/test_practices.py failed"
+
+# 7. Once init-factory has set the registry, no TBD may remain in it.
+if ! grep -q '^Status: TBD' meta/registry/runner.md; then
+  if grep -n 'TBD' meta/registry/runner.md; then
+    bad "registry is set but still has TBD (see above)"
+  fi
+fi
 
 if [ "$fail" -eq 0 ]; then
   echo "ok: harness checks passed"
