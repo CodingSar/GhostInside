@@ -38,6 +38,28 @@ BLOCKED = [
     "eval git push -f",
     "sudo ls",
     "ls | xargs rm -rf",
+    "echo hi\nrm -rf x",
+    "cd x\ngit push --force origin main",
+    "bash -lc 'git push -f'",
+    "bash -ec 'rm -rf x'",
+    "timeout 60 git push -f",
+    "nice git push -f",
+    "nice -n 5 rm -rf x",
+    "if true; then rm -rf x; fi",
+    "{ rm -rf x; }",
+    "! rm -rf x",
+    "for d in a b; do rm -rf $d; done",
+    "echo `rm -rf x`",
+    "echo $(git push --force)",
+    "find . -exec rm -rf {} +",
+    "find . -name x -execdir rm -fr {} \\;",
+    "env -u FOO git push -f",
+    "xargs -n1 rm -rf",
+    "git push --force-w origin main",
+    "git push --mirr",
+    "git push --for origin main",
+    "rm --rec --forc x",
+    "git push -f 'unbalanced",
 ]
 
 ALLOWED = [
@@ -53,6 +75,12 @@ ALLOWED = [
     "grep -rf patterns.txt .",
     "python3 -I meta/core/tools/check-harness.sh",
     "",
+    "git push --follow-tags origin main",
+    "git push --no-force-with-lease origin main",
+    "timeout 60 git push origin main",
+    "find . -name '*.pyc' -exec rm {} +",
+    "echo 'line1\nline2'",
+    "git commit -m 'subject\n\nbody'",
 ]
 
 

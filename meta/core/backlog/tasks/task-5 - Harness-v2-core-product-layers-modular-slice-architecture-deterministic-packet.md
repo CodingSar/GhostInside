@@ -7,7 +7,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:14'
+updated_date: '2026-10-10 09:24'
 labels: []
 dependencies: []
 modified_files:
@@ -75,6 +75,17 @@ modified_files:
     meta/core/backlog/tasks/task-2 -
     init-factory-skill-configure-a-cloned-harness-for-one-product.md
   - meta/core/backlog/tasks/task-4 - Eval-fixtures-for-init-factory.md
+  - backlog/completed/.gitkeep
+  - backlog/decisions/.gitkeep
+  - backlog/docs/.gitkeep
+  - backlog/drafts/.gitkeep
+  - backlog/milestones/.gitkeep
+  - backlog/tasks/.gitkeep
+  - meta/core/backlog/archive/.gitkeep
+  - meta/core/backlog/completed/.gitkeep
+  - meta/core/backlog/docs/.gitkeep
+  - meta/core/backlog/drafts/.gitkeep
+  - meta/core/backlog/milestones/.gitkeep
 priority: high
 type: enhancement
 ordinal: 5000
@@ -130,4 +141,6 @@ step 5: init-factory: product layer paths, never-change list = meta/core + core 
 step 6: guard.py PreToolUse hook (force push in all spellings incl. +refspec, --force-with-lease, -uf, git -C; rm with recursive+force flags in any order; sudo; nested bash -c/eval/env/xargs) + test_guard.py (3 tests, 37 cases); verified live: hook blocked rm -fr in this session. settings.json: stack-specific allows (npm, npx, node, make) removed (init adds them); CAVEMAN env moved to gitignored .claude/settings.local.json; deny list unchanged.
 
 step 7: README rewritten as human entry (start a product, layout, harness work); meta/core/design.md rewritten without status/next (layers table, parts, flow with tidy, product code, evaluation); meta/_about.md lists all tools. TASK-5 ACs reworded to what was built (packet.py, design.md). Notes added to TASK-2 and TASK-4 mapping old paths.
+
+review fixes A (findings 1,2,18): .gitkeep in every backlog folder (root and meta/core) - verified decision and draft creation in a fresh clone; preflight runs git push -u origin main after the remote rename and every push names origin main; first-run clean tree allows an untracked CONCEPT.md.
 <!-- SECTION:NOTES:END -->
