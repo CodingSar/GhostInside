@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 08:20'
-updated_date: '2026-10-10 08:48'
+updated_date: '2026-10-10 09:14'
 labels: []
 dependencies: []
 references:
@@ -101,4 +101,6 @@ step 10: meta/_about.md, PLAN parts row.
 AC5 reworded: lang/framework/datastore facets follow from the stack choice, so they are ratified at the stack gate, not the facets gate. Order of criteria unchanged.
 
 Independent review (reviewer subagent): 2 high, 14 medium, 18 low; all addressed. Highs: unreachable central now a non-stop path in facets/practices; stack phase now scaffolds manifest, lockfile, linter and test config and runs install before practices compiles lint rules. Registry gains rows: framework, install command, source root, datastore, connection variable, migration command. propose is resume-safe (content-hashed branch, reuses pushed branch and open PR) and exits 3 with the branch name when gh is missing or fails; GHOSTINSIDE_GH makes gh injectable for tests; 8 tests green. SKILL: task-creation guide, preflight commit, check-harness before meta/.claude commits, resume rows for several unfinished or Done-without-brief, URL normalization, no repo creation, decision granularity, real newlines. Seed source tags [brief: f] / [pack: id rule]. Skeleton: CI run located by commit sha; without gh criterion 8 stays unchecked.
+
+TASK-5 (2026-10-10) reshaped paths and phases: meta/registry/runner.md -> meta/product/stack.md, meta/guides/stack/ -> meta/product/overlays/, meta/tools/ -> meta/core/tools/, meta/practices/ -> meta/product/practices/, searcher -> packet.py, decision-1..8 -> HD-1..8, exit gate -> skeleton phase without a gate (HD-14), health slice -> health module. Read the criteria with those mappings.
 <!-- SECTION:NOTES:END -->

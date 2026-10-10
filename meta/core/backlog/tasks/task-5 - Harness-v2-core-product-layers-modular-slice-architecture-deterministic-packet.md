@@ -7,7 +7,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:12'
+updated_date: '2026-10-10 09:14'
 labels: []
 dependencies: []
 modified_files:
@@ -67,6 +67,9 @@ modified_files:
   - >-
     meta/core/backlog/decisions/decision-14 -
     init-factory-five-gates-per-HD-5-provision-and-seed-share-one-skeleton-has-none-one-stack-decision-instead-of-one-per-row.md
+  - .claude/settings.json
+  - meta/core/tools/guard.py
+  - meta/core/tools/test_guard.py
 priority: high
 type: enhancement
 ordinal: 5000
@@ -85,11 +88,11 @@ Review on 2026-10-10 found that template-owned defaults and init-written product
 - [ ] #3 Harness decisions have rationale in meta/core/decisions.md as HD-n, one-to-one with harness backlog decision-n
 - [ ] #4 Default product architecture is modules containing use-case slices, with app/ composition root, shared/ kernel, _about.md catalogs, import rules, forbidden folder names and size caps
 - [ ] #5 meta/core/tools/structure.py checks layout, catalogs, forbidden names and size caps deterministically, with tests; init-factory wires it, a boundary checker, duplication and dead-code checks into one check command
-- [ ] #6 Searcher worker is replaced by deterministic meta/core/tools/packet.sh
+- [ ] #6 Searcher worker is replaced by deterministic meta/core/tools/packet.py, with tests
 - [ ] #7 Guides support changing behaviour (plan lists tests to retire, test-writer edits only those), a tidy step after green, and test names carrying TASK-n#k
 - [ ] #8 Each rule has one home: generic testing practice merged into the test guide, dead domain-row mechanism removed, agent files only point to their guide, core guides cite the stack datastore instead of PostgreSQL
 - [ ] #9 init-factory matches the 5 grouped gates of HD-5 and records one stack decision instead of one per row
-- [ ] #10 README is a human entry, PLAN.md becomes DESIGN.md without status lists, governance merged into AGENTS.md, template settings carry no stack or personal entries, and a PreToolUse guard blocks force-push and recursive force-remove variants
+- [ ] #10 README is a human entry, PLAN.md becomes meta/core/design.md without status lists, governance merged into AGENTS.md, template settings carry no stack or personal entries, and a PreToolUse guard blocks force-push and recursive force-remove variants
 - [ ] #11 meta/core/tools/check-harness.sh passes
 <!-- AC:END -->
 
@@ -118,4 +121,6 @@ step 3: architecture.md rewritten (modules > slices, app/, shared/, catalogs, im
 step 4: packet.py + test_packet.py (6 tests) replace searcher (HD-12); orchestrate/test/implement guides rewritten: packet, retire list, catalogs after test-first, tidy step, TASK-n#k names, real datastore from stack.md (HD-13); generic testing practice merged into test.md and deleted; search.md, searcher agent removed; agents reduced to pointer to guide; stack.md gains source root, extensions, test file pattern, check command rows; __pycache__ untracked and ignored.
 
 step 5: init-factory: product layer paths, never-change list = meta/core + core agents/skill/AGENTS/CLAUDE; five gates (provision+seed shared, skeleton none), one stack decision (HD-14); stack phase proposes boundary, duplication, dead-code checkers and writes scripts/check.sh with structure.py; practices append check-cmd rules to check.sh; provision writes README and overlays with TASK-n#k idiom; seed proposes modules and module/slice drafts labelled module:<m>; skeleton is a health module with app/ wiring.
+
+step 6: guard.py PreToolUse hook (force push in all spellings incl. +refspec, --force-with-lease, -uf, git -C; rm with recursive+force flags in any order; sudo; nested bash -c/eval/env/xargs) + test_guard.py (3 tests, 37 cases); verified live: hook blocked rm -fr in this session. settings.json: stack-specific allows (npm, npx, node, make) removed (init adds them); CAVEMAN env moved to gitignored .claude/settings.local.json; deny list unchanged.
 <!-- SECTION:NOTES:END -->

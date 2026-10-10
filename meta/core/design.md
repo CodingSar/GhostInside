@@ -1,86 +1,80 @@
-# GhostInside: software factory harness
+# GhostInside: design
 
-Status: v1 done (`TASK-1`). Next: `init-factory` (`TASK-2`).
+A software factory that minimal models can run: Haiku first, then open-weight
+quantized models. The harness is the structure around the model. Small models
+follow closed procedures well and wander when context is large, so the
+harness keeps each worker's context small, its steps explicit, and every
+check that can be deterministic deterministic.
 
-## Goal
+Status and next work live in the harness backlog
+(`BACKLOG_CWD=meta/core backlog task list --plain`). Decisions and their
+rationale live in `meta/core/decisions.md`.
 
-A software factory that minimal models can run: Haiku first, then
-open-weight quantized models. The harness is the structure around the model.
-Small models follow closed procedures well and wander when context is large,
-so the harness keeps each worker's context small and its steps explicit.
-Stack and domain are not decided here. GhostInside is a template; each
-product is a clone of it. In the clone, `init-factory` proposes the stack and
-domain practices and the user ratifies them.
+## Template and product
+
+GhostInside is a template. Each product is a `git clone` of it with the
+template as the `harness` remote (`HD-4`). In the clone, `init-factory`
+proposes the stack and practices and the user ratifies them (`HD-5`).
+
+| Layer | Where | Owner |
+|---|---|---|
+| Core | `meta/core/`, `AGENTS.md`, `CLAUDE.md`, core agents, the init-factory skill | Template. Never edited in a clone; upgrades merge from `harness`. |
+| Product harness | `meta/product/` | init-factory, in the clone. |
+| Product | `src/`, `scripts/`, `backlog/`, root config files | The factory's workers and the user. |
 
 ## Parts
 
 | Part | Where | Role |
 |---|---|---|
-| Backlog tasks | `backlog/` | Plan of record. Acceptance criteria are the cases. |
-| Orchestrator | main thread, `meta/core/guides/orchestrate.md` | Owns one task from intake to Done. Launches workers. Runs tests. Commits and pushes. |
+| Backlog | root `backlog/` | Product plan of record. Acceptance criteria are the cases. |
+| Orchestrator | main thread, `meta/core/guides/orchestrate.md` | Owns one task from intake to Done. Launches workers, runs tests and checks, commits and pushes. |
 | Workers | `.claude/agents/`, Haiku | `test-writer`, `implementer`. Each reads one guide first. |
-| Guides | `meta/core/guides/` | Procedures. Core guides are written by a human and owned by the template. `init-factory` writes stack overlays in `meta/product/overlays/` only. |
-| Defaults | `meta/core/defaults/`, `meta/product/stack.md` | Vertical slices. PostgreSQL only. Runner TBD. Defaults are priors that `init-factory` may supersede by a ratified decision. |
-| Practices | `meta/product/practices/` | Testing rules. `init-factory` vendors facet packs from the central repo `CodingSar/GhostInsidePractices` and pins them in `practices.lock`. |
-| init-factory | `.claude/skills/init-factory/` | Main-thread skill run once per product clone, re-run to amend. Brief, facets, stack, packs, provision, seed, walking skeleton. Gated by user ratification. |
-| Checks | `meta/core/tools/check-harness.sh` | Deterministic checks on the harness itself. |
+| Guides | `meta/core/guides/`, overlays in `meta/product/overlays/` | Procedures, plus stack specifics per guide. |
+| Defaults | `meta/core/defaults/` | Modules of slices; PostgreSQL only. Overridden only by a product file and a ratified decision (`HD-6`, `HD-9`). |
+| Stack | `meta/product/stack.md` | Every command the factory runs. TBD in the template. |
+| Practices | `meta/product/practices/` | Facet packs from the central repo, vendored and locked (`HD-8`). |
+| Tools | `meta/core/tools/` | `packet.py` (research packet), `structure.py` (product layout and size), `practices.py` (packs), `guard.py` (Bash hook), `check-harness.sh`. |
+| init-factory | `.claude/skills/init-factory/` | Configures a clone: brief, facets, stack, packs, provision, seed, walking skeleton. Five gates. |
 
-## Flow
+## Flow of one task
 
-1. Intake: orchestrator creates a Backlog task. Each criterion traces to the
-   user's words, or is marked `ASSUMED:` until confirmed.
+1. Intake: the orchestrator creates a Backlog task. Each criterion traces to
+   the user's words, or is marked `ASSUMED:` until confirmed.
 2. Research: `meta/core/tools/packet.py` prints the rules and slice files, with file and line.
-3. Plan: orchestrator writes the plan into the task's `plan` field.
-4. Test first: `test-writer` writes one test per criterion and the stubs they
-   call. The orchestrator runs them. All must fail for the right reason.
-5. Implement: one `implementer` per plan step, inside a file allowlist. Targeted
-   tests run per step.
-6. Verify: full suite once. Changed files compared with the plan.
-7. Close out: criteria checked only with run evidence. Final summary. Status
-   Done. Commit and push.
+3. Plan: the task's `plan` field. Steps name the slice, files, criteria,
+   test command, and the tests the change retires.
+4. Test first: `test-writer` writes one test per criterion (`TASK-n#k`) and
+   the stubs. All new tests fail for the right reason; all others pass.
+5. Implement: one `implementer` per plan step, inside a file allowlist.
+6. Tidy: the check command (lint, boundaries, structure, duplication, dead
+   code) runs; findings in the plan's files get one tidy step.
+7. Verify: full suite and check command once; changed files match the plan.
+8. Close out: criteria checked only with run evidence. Commit and push.
+
+## Product code
+
+`meta/core/defaults/architecture.md`: modules own their tables and expose an
+`index`; each use case is a flat slice inside its module; `app/` wires
+transports to module indexes; `shared/` is a kernel without business rules.
+`_about.md` catalogs name every module and slice. Size caps and forbidden
+catch-all folders keep code small; `structure.py` and the stack's boundary
+checker enforce them on every task.
 
 ## Where probability is used, and where it is not
 
-- Deterministic: file allowlists, status values, the red check, the
-  `RESULT:` lines, the harness check script, the stop rules.
-- Probabilistic: the implementation inside a stub, helper names, how a test
-  is phrased, the retries that give the model another sample.
-- Retries are cheap and bounded. Gaps, deviations, and ambiguity stop the run.
+- Deterministic: the packet, file allowlists, status values, the red check,
+  the `RESULT:` lines, the check command, the harness checks, the guard
+  hook, the stop rules.
+- Probabilistic: the code inside a stub, helper names, how a test is
+  phrased, the retries that give the model another sample.
+- Retries are cheap and bounded. Gaps, deviations, and ambiguity stop the
+  run.
 
 ## Evaluation
 
 End-to-end tests are the acceptance evidence for each task. Factory-level
 evaluation is separate: run the same small tasks through the factory and
 record how often the first pass is green, how many files fall outside the
-plan, how many retries a task needs, and how large the orchestrator's context
-gets. Fixtures are Backlog tasks with known outcomes, so runs are comparable.
-
-## Next
-
-1. Central practices repo `git@github.com:CodingSar/GhostInsidePractices.git`, created by the user
-   (`TASK-3`).
-2. `init-factory` skill (`TASK-2`). Runs in the Opus main thread inside a
-   clone. Phases: brief, facets, stack and architecture, practices,
-   provision and seed, walking skeleton. Each phase is an acceptance
-   criterion of an init task, so a re-run resumes, and a re-run on an
-   initialized clone amends.
-3. Eval fixtures for `init-factory` (`TASK-4`).
-4. First end-to-end run on a toy slice to check the flow.
-5. Build the factory-level eval fixtures.
-
-## Settled
-
-- Vertical slices by default (`HD-1`).
-- PostgreSQL only by default (`HD-2`).
-- Stack and runner decided through `init-factory` (`HD-3`): it
-  proposes, the user ratifies at grouped gates (`HD-5`).
-- Template and clone: products are clones with a `harness` remote
-  (`HD-4`).
-- Defaults are priors, superseded only by a ratified decision (`HD-6`).
-- Core guides are template-owned; stack specifics go in overlays
-  (`HD-7`).
-- Practices come from a central repo as facet packs, vendored and pinned,
-  delta-checked after 7 days; new packs go back by PR (`HD-8`).
-- Haiku only for workers until the flow works.
-- No headless launch. Workers are subagents launched from the main thread.
-- Harness changes live on `main`; commit and push often.
+plan, how many retries and tidy runs a task needs, and how large the
+orchestrator's context gets. Fixtures are Backlog tasks with known outcomes,
+so runs are comparable.

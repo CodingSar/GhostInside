@@ -4,6 +4,7 @@ title: Eval fixtures for init-factory
 status: To Do
 assignee: []
 created_date: '2026-10-10 08:20'
+updated_date: '2026-10-10 09:14'
 labels: []
 dependencies:
   - TASK-2
@@ -25,3 +26,9 @@ init-factory makes many judgment calls (facets, overrides of defaults, packs). W
 - [ ] #3 A run checks: registry has no TBD, expected facets selected, decisions recorded, overrides fire (CLI fixture gets no PostgreSQL), skeleton tests green
 - [ ] #4 Results of a run are recorded so later runs compare against them
 <!-- AC:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Per TASK-5: "registry has no TBD" means meta/product/stack.md has no TBD; PLAN.md is now meta/core/design.md. Also check: scripts/check.sh exits 0 (structure.py, boundaries), init task in root backlog/, five gates.
+<!-- SECTION:NOTES:END -->
