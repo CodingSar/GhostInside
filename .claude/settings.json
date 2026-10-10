@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(groma:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(node:*)",
+      "Bash(python3:*)",
+      "Bash(make:*)",
+      "Bash(git:*)",
+      "Bash(gh:*)",
+      "Edit",
+      "Write",
+      "WebFetch"
+    ],
+    "deny": [
+      "Bash(rm -rf:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(sudo:*)",
+      "Read(~/.ssh/**)",
+      "Edit(~/.ssh/**)",
+      "Write(~/.ssh/**)",
+      "Edit(~/.claude/settings.json)",
+      "Write(~/.claude/settings.json)"
+    ]
+  },
+  "env": {
+    "CAVEMAN_DEFAULT_MODE": "ultra"
+  }
+}
