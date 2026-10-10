@@ -12,6 +12,7 @@
 - Read `PLAN.md` for the design and `meta/_about.md` for the catalog.
 - The main thread runs the orchestrator procedure in `meta/guides/orchestrate.md`. Workers are Haiku subagents in `.claude/agents/`, launched from the main thread. No headless launch.
 - Backlog tasks are the plan of record. Acceptance criteria are the cases. Plans live in the task `plan` field, not in files.
+- Two Backlog projects. Root `backlog/` is the product backlog; the template ships it empty. `meta/core/backlog/` is the harness backlog: prefix every `backlog` command for harness work with `BACKLOG_CWD=meta/core`. In a product clone the harness backlog is read-only history.
 - Run `meta/tools/check-harness.sh` before committing harness changes.
 
 <!-- BACKLOG.MD GUIDELINES START -->

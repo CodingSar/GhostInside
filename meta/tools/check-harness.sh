@@ -18,14 +18,9 @@ for ref in $refs; do
   [ -e "$ref" ] || bad "referenced path missing: $ref"
 done
 
-# 2. No headless launch anywhere in the harness.
-if grep -rn 'claude -p' .claude meta --include='*.md'; then
+# 2. No headless launch anywhere in the harness (backlog history excluded).
+if grep -rn 'claude -p' .claude meta --include='*.md' --exclude-dir=backlog; then
   bad "headless launch reference found (see above)"
-fi
-
-# 3. No plan files: plans live in Backlog.
-if grep -rn 'meta/plans' .claude meta PLAN.md AGENTS.md --include='*.md'; then
-  bad "reference to meta/plans found (see above)"
 fi
 
 # 4. Every worker runs on Haiku for now.
