@@ -1,14 +1,20 @@
 ---
 id: TASK-2
 title: 'init-factory skill: configure a cloned harness for one product'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-10-10 08:20'
+updated_date: '2026-10-10 08:32'
 labels: []
 dependencies: []
 references:
   - PLAN.md
   - meta/registry/runner.md
+modified_files:
+  - meta/tools/practices.py
+  - meta/tools/test_practices.py
+  - .gitignore
 priority: high
 type: feature
 ordinal: 2000
@@ -39,3 +45,26 @@ Pack rule format: ID, MUST/SHOULD, one line, source URL, enforce: lint|check-cmd
 - [ ] #11 Exit gate: a trivial health slice runs through the real test runner and real datastore, tests green, `meta/tools/check-harness.sh` passes
 - [ ] #12 Re-running on an initialized clone enters amend mode: it asks only about deltas between the new concept and `product-brief` and proposes superseding decisions
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. Skill entry: `.claude/skills/init-factory/SKILL.md` (Opus main thread only). Preflight: refuse when origin is the template (git@github.com:CodingSar/GhostInside.git) and offer to rename origin to `harness` and add the product remote; require shared history with `harness/main` (plain git clone, not the GitHub template button). Resume: find the init task by label `init-factory`; create it with one AC per phase when absent; continue at the first unchecked AC. Amend: init task Done and `product-brief` exists -> new init task in amend mode. AC 1-3, 12.
+2. Phase references in `.claude/skills/init-factory/phases/`: `brief.md` (checklist: users, core jobs, scale, data sensitivity and compliance, deploy target, integrations, non-goals, language preference; output Backlog doc `product-brief`), `facets.md` (facet kinds and derivation), `stack.md`, `practices.md`, `provision.md`, `seed.md`, `skeleton.md`. Each phase ends at its gate table (proposal, rationale, rejected alternatives), then commit. AC 4-5, 10.
+3. Rationale store: decision CLI has no body, so each init decision gets a row in Backlog doc `init-decisions` (decision id, choice, rationale, rejected alternatives); decision title names the choice. AC 6.
+4. Deterministic helper `meta/tools/practices.py` (python3 stdlib, harness-only, not the product stack): `status <facet ids>` -> hit/stale(>7d)/miss against central index.json; `check <pack file>` -> front matter and rule table format; `vendor <ids>` -> copy packs to `meta/practices/packs/`, write `meta/practices/practices.lock` (repo, sha, ids), regenerate `meta/practices/review.md` from review-level rules; `verify` -> lock matches vendored files; `propose <pack file>` -> branch in a scratch clone of the central repo, add pack + index entry, `gh pr create`. AC 7-8.
+5. Searcher wiring: add topic `practices:review` -> `meta/practices/review.md` in `meta/guides/search.md` and `.claude/agents/searcher.md`; orchestrator step 3 passes it. Update `meta/practices/_about.md`. AC 7.
+6. Stack overlays: create `meta/guides/stack/_about.md`; core guides orchestrate/test/implement get one line each: read the overlay for this guide in `meta/guides/stack/` when it exists. AC 9.
+7. Provision phase spec: compose file for the datastore, toolchain pin, CI workflow mirroring registry lint/test commands, devcontainer, allow-only additions to `.claude/settings.json` (denies untouched per meta/docs/harness-review.md rule 5), overlays. AC 9.
+8. Seed and skeleton specs: milestones via `backlog milestone add`, drafts via `backlog task create --draft` with criteria traced to `product-brief` or `ASSUMED:`; health slice in vertical-slice layout through the real runner and datastore; exit gate = full tests green, lint green, `check-harness.sh` passes, registry no TBD. AC 10-11.
+9. check-harness: scan `.claude/skills` for path refs; when `meta/practices/practices.lock` exists, run `practices.py verify`; when the init task is Done, fail on TBD in `meta/registry/runner.md`.
+10. Docs: `meta/_about.md`, `PLAN.md` Parts row for init-factory. Verify: `practices.py` self-test on fixture packs in scratchpad, `check-harness.sh` green, dry read of SKILL.md against each AC. AC 1-12 coverage reviewed; full behavioural proof is TASK-4.
+
+Note: step 4 tests are committed as meta/tools/test_practices.py (temp dirs, local bare repo as central, fake gh) instead of a scratchpad-only self-test, so check-harness can rerun them.
+<!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+step 4: practices.py fetch/status/check/vendor/verify/propose; 7 unittest cases green; fetch+status against real central: 6acaf49, both facets miss (empty index).
+<!-- SECTION:NOTES:END -->
