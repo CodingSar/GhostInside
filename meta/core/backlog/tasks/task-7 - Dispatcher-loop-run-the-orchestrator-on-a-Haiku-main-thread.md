@@ -1,16 +1,41 @@
 ---
 id: TASK-7
 title: 'Dispatcher loop: run the orchestrator on a Haiku main thread'
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-10-10 16:08'
-updated_date: '2026-10-10 16:11'
+updated_date: '2026-10-10 16:19'
 labels:
   - orchestrator
   - tools
   - hooks
 dependencies: []
+modified_files:
+  - meta/core/tools/loop.py
+  - meta/core/tools/test_loop.py
+  - .gitignore
+  - meta/core/guides/intake.md
+  - meta/core/guides/plan.md
+  - meta/core/guides/research.md
+  - meta/core/guides/test.md
+  - meta/core/guides/implement.md
+  - meta/core/guides/orchestrate.md
+  - .claude/agents/intake.md
+  - .claude/agents/planner.md
+  - .claude/agents/researcher.md
+  - .claude/agents/test-writer.md
+  - .claude/agents/implementer.md
+  - .claude/settings.json
+  - meta/core/tools/check-harness.sh
+  - meta/product/stack.md
+  - .claude/skills/init-factory/phases/stack.md
+  - .claude/skills/init-factory/phases/skeleton.md
+  - meta/core/decisions.md
+  - meta/core/design.md
+  - AGENTS.md
+  - README.md
+  - meta/_about.md
 priority: high
 type: feature
 ordinal: 7000
@@ -24,16 +49,16 @@ Everything in the factory runs on Haiku, the main thread included; only research
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 `meta/core/tools/loop.py` runs one task from intake to Done through `start`, `next`, `done`, and `status`; `next` prints exactly one of LAUNCH, ASK, DONE, STOP and runs every deterministic step itself (preflight, activate, red gate, targeted and full tests, allowlist and plan-diff checks, tidy routing, close-out, commits, push)
-- [ ] #2 Every agent ends with one typed line: RETURN ok, call, ask, deviation, or blocked; `loop.py done` rejects a malformed line with one relaunch, then STOP
-- [ ] #3 A RETURN call pushes a frame in `.scratch/<run>/`; when the callee returns ok, the caller is relaunched with a resume frame holding its earlier output and the callee result; only listed edges are allowed and depth is capped at 3
-- [ ] #4 RETURN ask produces ASK with a question file and an answer file; the main thread asks the user, writes the answer, and the asking agent resumes with it
-- [ ] #5 All run state is on disk: after /clear, `loop.py next` repeats the pending instruction or continues
-- [ ] #6 A SubagentStop hook blocks a loop agent from finishing without a valid RETURN line; a Stop hook blocks the main thread from ending while a run is pending, except at ASK, DONE, or STOP
-- [ ] #7 The red gate and criterion evidence come from the JUnit XML report named in `meta/product/stack.md`; a criterion is checked only when its `TASK-n#k` test passed
-- [ ] #8 Judgment roles are agents with guides and the RETURN grammar: intake, planner, test-writer, implementer (Haiku) and researcher (the only non-Haiku agent); `orchestrate.md` becomes the short dispatcher procedure
-- [ ] #9 `meta/core/tools/test_loop.py` covers return parsing, call and resume, ask, resume after restart, plan parsing, the red gate, the allowlist check, and both hooks; `check-harness.sh` passes
-- [ ] #10 HD-16 records the design; design.md, AGENTS.md, decisions.md, catalogs, and the stack template match
+- [x] #1 `meta/core/tools/loop.py` runs one task from intake to Done through `start`, `next`, `done`, and `status`; `next` prints exactly one of LAUNCH, ASK, DONE, STOP and runs every deterministic step itself (preflight, activate, red gate, targeted and full tests, allowlist and plan-diff checks, tidy routing, close-out, commits, push)
+- [x] #2 Every agent ends with one typed line: RETURN ok, call, ask, deviation, or blocked; `loop.py done` rejects a malformed line with one relaunch, then STOP
+- [x] #3 A RETURN call pushes a frame in `.scratch/<run>/`; when the callee returns ok, the caller is relaunched with a resume frame holding its earlier output and the callee result; only listed edges are allowed and depth is capped at 3
+- [x] #4 RETURN ask produces ASK with a question file and an answer file; the main thread asks the user, writes the answer, and the asking agent resumes with it
+- [x] #5 All run state is on disk: after /clear, `loop.py next` repeats the pending instruction or continues
+- [x] #6 A SubagentStop hook blocks a loop agent from finishing without a valid RETURN line; a Stop hook blocks the main thread from ending while a run is pending, except at ASK, DONE, or STOP
+- [x] #7 The red gate and criterion evidence come from the JUnit XML report named in `meta/product/stack.md`; a criterion is checked only when its `TASK-n#k` test passed
+- [x] #8 Judgment roles are agents with guides and the RETURN grammar: intake, planner, test-writer, implementer (Haiku) and researcher (the only non-Haiku agent); `orchestrate.md` becomes the short dispatcher procedure
+- [x] #9 `meta/core/tools/test_loop.py` covers return parsing, call and resume, ask, resume after restart, plan parsing, the red gate, the allowlist check, and both hooks; `check-harness.sh` passes
+- [x] #10 HD-16 records the design; design.md, AGENTS.md, decisions.md, catalogs, and the stack template match
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -47,3 +72,18 @@ Everything in the factory runs on Haiku, the main thread included; only research
 6. check-harness, commit + push per coherent step.
 Note: docs (2026-10) say subagents can nest 3 deep; trampoline kept for bounded context, AskUserQuestion on main thread only, and resume after /clear.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+Evidence: test_loop.py 15 tests OK (happy path to Done with push, call/resume, disallowed call -> relaunch -> STOP, ask round trip, restart repeats instruction, ASSUMED stop, red gate pass/error/missing, allowlist STOP, plan parsing, return grammar, both hooks, tidy routing, unset stack). check-harness.sh ok (new check 3b: loop agents match guides with RETURN lines). HD-16 = decision-16. Hooks smoke-tested idle (exit 0).
+Not yet proven: a live run with Haiku agents in a product clone (TASK-4 fixtures). Products initialized before this change need the stack row `test report (JUnit XML)`; loop.py stops with a message naming it.
+Fix on the way: skeleton test name #8 -> #9 after TASK-6 renumbering.
+Follow-up: TASK-8 (init-factory on the loop).
+<!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Orchestrator rebuilt as a dispatcher for a Haiku main thread (HD-16). meta/core/tools/loop.py holds the task state machine and runs all deterministic steps; intake, planner, test-writer, implementer (Haiku) and researcher (Sonnet) end with typed RETURN lines; call/ask push frames on a stack in .scratch/<run>/ and resume the caller. Stop and SubagentStop hooks keep the loop on rails. Red gate and criterion evidence come from a JUnit report named in the stack. Verified with test_loop.py (15 tests) and check-harness.sh; live Haiku run pending TASK-4.
+<!-- SECTION:FINAL_SUMMARY:END -->
