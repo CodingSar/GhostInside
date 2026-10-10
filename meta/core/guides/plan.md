@@ -43,8 +43,9 @@ Catalog: <source root>/modules/<module>/_about.md :: - `<slice>`: <purpose>
 ```
 
 - `Test:` is the stack's targeted command followed by a path, or the full
-  test command. Nothing else.
-- Files never under `meta/`, `.claude/`, or `backlog/`.
+  test command. Nothing else: no `;`, `&&`, `|`, or redirects.
+- Files never under `meta/`, `.claude/`, or `backlog/`, and never test files:
+  the test-writer owns tests; reach them with `Retire:` and `Change:` lines.
 - `Retire:` when a criterion changes behaviour an existing test pins. A test
   not listed is never edited or deleted.
 - `Change:` when a criterion changes an existing handler's inputs or

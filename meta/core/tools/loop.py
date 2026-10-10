@@ -13,9 +13,10 @@ After a LAUNCH it reports back with `loop.py done "<the agent's RETURN line>"`,
 after an ASK with `loop.py done "RETURN ok <answers>"`. `done` prints the
 next instruction.
 
-Everything deterministic runs here: preflight, activation, packets, the red
-gate, test and check runs, the allowlist and plan-diff checks, tidy routing,
-close-out, commits, and the push. Judgment runs in fresh subagents that end
+Everything deterministic runs here: preflight, the baseline suite, activation,
+packets, the red gate, test and check runs, the allowlist and plan-diff
+checks, the check that no agent moved HEAD, tidy routing, close-out, commits,
+and the push. Judgment runs in fresh subagents that end
 with one RETURN line. An agent that needs another agent or the user returns
 `call` or `ask`: its frame is pushed on a stack in .scratch/<run>/state.json
 and it is relaunched with the result when the callee returns. All state is on
@@ -234,7 +235,7 @@ def launch(st, agent, body, job=None, retry_of=None):
     base = f"{SCRATCH}/{st['run']}/frames/{n:02d}-{agent}"
     fr = {"kind": "launch", "n": n, "agent": agent, "in": base + ".in.md", "out": base + ".out.md",
           "call": base + ".call.md", "ask": base + ".ask.md", "job": job or base + ".in.md",
-          "retry_of": retry_of or n}
+          "retry_of": retry_of or n, "head": git("rev-parse", "HEAD").strip()}
     (ROOT / base).parent.mkdir(parents=True, exist_ok=True)
     (ROOT / fr["in"]).write_text(frame_text(st, fr, body))
     st["pending"] = fr
@@ -303,6 +304,9 @@ def parse_plan(text, n_criteria, sv):
         for f in s["files"]:
             if f.startswith(("/", "meta/", ".claude/", "backlog/", SCRATCH)) or ".." in f.split("/"):
                 errors.append(f"step {s['n']}: file not allowed: {f}")
+            elif re.search(sv["tests"], f.rsplit("/", 1)[-1]):
+                errors.append(f"step {s['n']}: test file in Files: {f} (tests belong to the test-writer; "
+                              f"use a Retire or Change line)")
         for c in s["criteria"]:
             if not 1 <= c <= n_criteria:
                 errors.append(f"step {s['n']}: no criterion {c}")
@@ -310,6 +314,8 @@ def parse_plan(text, n_criteria, sv):
             errors.append(f"step {s['n']}: no Test line")
         elif s["test"] != sv["full"] and not s["test"].startswith(sv["targeted"] + " "):
             errors.append(f"step {s['n']}: Test must be the full test command or start with: {sv['targeted']}")
+        elif s["test"] != sv["full"] and re.search(r"[;&|<>`$()\n]", s["test"][len(sv["targeted"]):]):
+            errors.append(f"step {s['n']}: Test takes paths only after the targeted command, no shell operators")
     covered = {c for s in steps for c in s["criteria"]}
     missing = [c for c in range(1, n_criteria + 1) if c not in covered]
     if missing:
@@ -473,6 +479,10 @@ def done_intake(st, sv, fr):
 
 def enter_activate(st, sv):
     t = st["task"]
+    code, results, log_path = full_tests(st, sv, "baseline")
+    if code or results is None or any(s != "pass" for _, s, _ in results):
+        raise Stop(f"the full test suite is not green before {t} starts: {log_path}; "
+                   f"fix main first, then retry")
     st["start"] = git("rev-parse", "HEAD").strip()
     backlog("task", "edit", t, "-s", "In Progress", "-a", "@claude")
     backlog("task", "edit", t, "--append-notes", f"start: {st['start']}")
@@ -782,6 +792,13 @@ def cmd_done(text):
         log(st, f"answer {p['answer']}")
         st["pending"] = None
         resume(st, st["stack"].pop(), p["answer"])
+        print(advance(st))
+        return 0
+    head = git("rev-parse", "HEAD").strip()
+    if p.get("head") and head != p["head"]:
+        # Allowlist checks compare the working tree to HEAD; an agent's commit would hide its files.
+        stop(st, f"{p['agent']} moved HEAD from {p['head'][:12]} to {head[:12]}; only loop.py commits. "
+                 f"Inspect with `git log {p['head'][:12]}..HEAD`, reset to {p['head'][:12]} if unwanted, then retry")
         print(advance(st))
         return 0
     try:

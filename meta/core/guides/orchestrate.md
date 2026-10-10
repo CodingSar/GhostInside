@@ -40,10 +40,11 @@ Every command prints one line. Do what it says; your report prints the next.
 ## What `loop.py` does
 
 Preflight (the stack must be set) -> intake agent (task and criteria) ->
-activate -> planner agent (plan in the task) -> test-writer agent, then the
+baseline (the full suite is green before the task) and activate -> planner agent (plan in the task) -> test-writer agent, then the
 red gate from the JUnit report -> one implementer per plan step, each
 checked against its allowlist and targeted tests -> tidy (fix and check
 commands, findings routed to one tidy run) -> verify (full suite, check,
 changed files within the plan) -> close (criteria checked by their passing
-`TASK-n#k` tests) -> one push. It commits after each stage. Gaps,
-deviations, spent retries, and files outside an allowlist print STOP.
+`TASK-n#k` tests) -> one push. It commits after each stage; an agent that
+moves HEAD stops the run. Gaps, deviations, spent retries, and files outside
+an allowlist print STOP.

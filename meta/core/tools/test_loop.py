@@ -317,17 +317,40 @@ class LoopTest(unittest.TestCase):
 
     def test_plan_parsing(self):
         m = load_module(self.r.root)
-        sv = {"full": "pytest", "targeted": "pytest", "src": "src"}
+        sv = {"full": "pytest", "targeted": "pytest", "src": "src", "tests": r"^test_.*\.py$"}
         plan = m.parse_plan(PLAN.format(targeted="pytest"), 2, sv)
         self.assertEqual(plan["steps"][0]["criteria"], [1, 2])
         self.assertEqual(plan["catalogs"], [["src/modules/billing/_about.md", "- `pay`: pay an order"]])
-        bad = "1. Hack\n   Files: meta/core/guides/test.md\n   Criteria: 1\n   Test: rm -rf src\n"
+        bad = ("1. Hack\n   Files: meta/core/guides/test.md, src/modules/a/test_a.py\n   Criteria: 1\n"
+               "   Test: rm -rf src\n2. Mask\n   Files: src/modules/a/index.py\n   Criteria: 2\n"
+               "   Test: pytest src/modules/a; true\n")
         with self.assertRaises(ValueError) as e:
             m.parse_plan(bad, 2, sv)
         msg = str(e.exception)
         self.assertIn("file not allowed: meta/core/guides/test.md", msg)
-        self.assertIn("Test must be the full test command or start with: pytest", msg)
-        self.assertIn("criteria not covered by any step: 2", msg)
+        self.assertIn("test file in Files: src/modules/a/test_a.py", msg)
+        self.assertIn("step 1: Test must be the full test command or start with: pytest", msg)
+        self.assertIn("step 2: Test takes paths only after the targeted command", msg)
+        with self.assertRaises(ValueError) as e:
+            m.parse_plan(bad.replace("Criteria: 2", "Criteria: none"), 2, sv)
+        self.assertIn("criteria not covered by any step: 2", str(e.exception))
+
+    def test_an_agent_commit_stops_the_run(self):
+        r = self.r
+        line = r.to_red()
+        r.write_tests({"TASK-1#1 paid": "fail", "TASK-1#2 twice": "fail"})
+        line = r.ok(line)
+        r.files({"src/shared/util.py": "x = 1\n"})
+        r.git("add", "-A")
+        r.git("commit", "-q", "-m", "sneaky")
+        line = r.ok(line)
+        self.assertTrue(line.startswith("STOP implementer moved HEAD from"), line)
+
+    def test_a_red_suite_stops_the_run_before_planning(self):
+        r = self.r
+        r.fake(tests={"old test": "fail"})
+        line = r.ok(r.say("start", "TASK-1"), "task: TASK-1\n")
+        self.assertTrue(line.startswith("STOP the full test suite is not green before TASK-1 starts"), line)
 
     def test_return_grammar(self):
         m = load_module(self.r.root)
