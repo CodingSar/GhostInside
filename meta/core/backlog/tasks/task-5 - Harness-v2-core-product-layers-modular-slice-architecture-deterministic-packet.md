@@ -7,7 +7,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:07'
+updated_date: '2026-10-10 09:10'
 labels: []
 dependencies: []
 modified_files:
@@ -50,9 +50,20 @@ modified_files:
   - >-
     meta/core/backlog/decisions/decision-11 -
     Default-product-architecture-modules-of-use-case-slices-app-composition-root-shared-kernel-catalogs-size-caps-enforced-by-structure.py-amends-decision-1.md
-  - meta/core/tools/__pycache__/structure.cpython-314.pyc
   - meta/core/tools/structure.py
   - meta/core/tools/test_structure.py
+  - .gitignore
+  - >-
+    meta/core/backlog/decisions/decision-12 -
+    Searcher-worker-replaced-by-deterministic-packet.py.md
+  - >-
+    meta/core/backlog/decisions/decision-13 -
+    Behaviour-changes-retire-named-tests-tidy-step-after-green-test-names-carry-TASK-nk.md
+  - >-
+    meta/core/backlog/tasks/task-5 -
+    Harness-v2-core-product-layers-modular-slice-architecture-deterministic-packet.md
+  - meta/core/tools/packet.py
+  - meta/core/tools/test_packet.py
 priority: high
 type: enhancement
 ordinal: 5000
@@ -100,4 +111,6 @@ step 1: harness backlog moved to meta/core/backlog, empty product backlog/ at ro
 step 2: meta split into core/ (guides, defaults, tools, decisions.md, design.md, backlog) and product/ (stack.md, practices/, overlays/ later). decisions.md HD-1..HD-10 with rationale; decision-9/10 created in harness backlog; citations renamed decision-n -> HD-n. harness-review.md merged into AGENTS.md Governance. check-harness: optional product refs, tests glob, clone check (template-owned paths vs merge-base with harness/main) - verified FAIL on edited core guide in scratch clone, ok when clean.
 
 step 3: architecture.md rewritten (modules > slices, app/, shared/, catalogs, import rules, forbidden names, caps); persistence.md per-module tables; structure.py + test_structure.py (9 tests green); HD-11 / decision-11.
+
+step 4: packet.py + test_packet.py (6 tests) replace searcher (HD-12); orchestrate/test/implement guides rewritten: packet, retire list, catalogs after test-first, tidy step, TASK-n#k names, real datastore from stack.md (HD-13); generic testing practice merged into test.md and deleted; search.md, searcher agent removed; agents reduced to pointer to guide; stack.md gains source root, extensions, test file pattern, check command rows; __pycache__ untracked and ignored.
 <!-- SECTION:NOTES:END -->

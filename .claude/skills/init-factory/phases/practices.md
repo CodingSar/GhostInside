@@ -39,11 +39,10 @@ Pack format and index: the central repo's README
      does not use: map it to the stack linter's equivalent rule; with no
      equivalent, it is enforced by review through the `implement.md` overlay
      (provision phase).
-   - `check-cmd:` the command, run by `scripts/practice-checks.sh`. The
-     registry lint command becomes `<linter command> && scripts/practice-checks.sh`.
+   - `check-cmd:` the command, appended to `scripts/check.sh` (the check
+     command in `meta/product/stack.md`).
    - `test`: becomes a criterion in the seed phase.
-8. Gate: one row per pack, plus one row for the new lint command if step 7
-   changes it. Pack row: Proposal = origin (central, refreshed, new), rule
+8. Gate: one row per pack. Pack row: Proposal = origin (central, refreshed, new), rule
    count, MUST/SHOULD split, Enforce split, rules mapped to review, and the
    three rules most likely to surprise the user. Why = the facet. Rejected
    alternatives = dropped rules or `-`. The user may drop packs or rules;
@@ -55,11 +54,10 @@ Pack format and index: the central repo's README
    then `verify`. The lock records `central` or `local`; refreshed and new
    packs are both `local` until their PR merges.
 10. Compile the plan from step 7. `vendor` regenerates
-    `meta/product/practices/enforced.md` and `review.md`; never edit them. Edit the
-    linter config, write `scripts/practice-checks.sh` (exits non-zero on any
-    failure) if there are check-cmd rules, update the lint command in
-    `meta/product/stack.md`, and run it once: it must exit 0 on the
-    scaffold. Note `review via overlay: <rule ids>` for the provision phase.
+    `meta/product/practices/enforced.md` and `review.md`; never edit them.
+    Edit the linter config, append the check-cmd rules to `scripts/check.sh`,
+    and run the check command once: it must exit 0 on the scaffold. Note
+    `review via overlay: <rule ids>` for the provision phase.
 11. Upstream: for each refreshed or new pack (and each local copy the user
     chose to propose),
     `python3 -I meta/core/tools/practices.py propose .cache/init/packs/<id>.md`.
@@ -87,10 +85,9 @@ file section>.
 ## Output
 
 `meta/product/practices/packs/`, `practices.lock`, `review.md`, `enforced.md`, the
-linter config, `scripts/practice-checks.sh` if any check-cmd rules, the lint
-command in the registry, PR URLs in notes.
+linter config, the practice checks in `scripts/check.sh`, PR URLs in notes.
 
-Evidence for the criterion: `verify` output, the lint command exit 0, and
+Evidence for the criterion: `verify` output, the check command exit 0, and
 the PR URLs (or the `PR not opened` and `central unreachable` notes).
 
 ## Amend

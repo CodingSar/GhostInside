@@ -5,6 +5,9 @@ orchestrator owns real tasks (`meta/core/guides/orchestrate.md`).
 
 Read `backlog instructions task-creation` first.
 
+Gate: shared with the provision phase (`SKILL.md`). The drafts below are
+proposed in that gate; after it, this phase only creates them.
+
 ## Source tags
 
 Every criterion ends with exactly one source tag:
@@ -18,22 +21,23 @@ Every criterion ends with exactly one source tag:
 ## Steps
 
 1. Milestones: 2 to 5, from the brief's core jobs, in delivery order.
-2. Candidate slices: one per core job, or fewer when two jobs share one
-   entry point. Name each slice in kebab-case.
-3. For each slice, draft:
-   - title `Slice <name>: <core job>`;
+2. Modules: one per area of the domain the core jobs work in, as the
+   architecture defines (`HD-11`). Name each in kebab-case.
+3. Slices: one per use case (one command or one query) of a core job. Name
+   each in kebab-case. One draft per slice:
+   - title `<module>/<slice>: <use case>`;
    - description: why, quoting `product-brief`;
    - criteria in `GIVEN <state> WHEN <action> THEN <outcome>` form, each
      with its source tag;
-   - label `slice:<name>`, its milestone.
+   - label `module:<module>`, its milestone.
 4. One draft `Practice tests` with one criterion per `test` rule in
    `meta/product/practices/enforced.md`, tagged `[pack: ...]`, if there are any.
-5. Gate: milestones, then one row per draft. Proposal = title, criteria
-   count, `ASSUMED:` count. Why = the core job or pack. Rejected
-   alternatives = slices merged or split, or `-`.
+5. Gate rows (shared gate): milestones, modules, then one row per draft.
+   Proposal = title, criteria count, `ASSUMED:` count. Why = the core job or
+   pack. Rejected alternatives = modules or slices merged or split, or `-`.
 6. Create: `backlog milestone add "<name>"` for each milestone, then
    `backlog task create --draft "<title>" -d "<why>" --ac "<criterion>" ...
-   -l slice:<name> -m "<milestone>" --plain` for each draft.
+   -l module:<module> -m "<milestone>" --plain` for each draft.
 
 ## Output
 

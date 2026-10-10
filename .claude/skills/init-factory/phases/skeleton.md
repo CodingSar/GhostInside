@@ -1,51 +1,58 @@
 # Phase: walking skeleton
 
-Goal: proof that the loop the workers depend on runs: registry commands,
-datastore, migrations, lint, tests, CI. You write this slice yourself; it is
-harness proof, not product work, so it does not go through the orchestrator.
+Goal: proof that the loop the workers depend on runs: stack commands,
+datastore, migrations, the check command, tests, CI. You write this module
+yourself; it is harness proof, not product work, so it does not go through
+the orchestrator. No gate: every piece of evidence is a command result.
 
-## The health slice
+## The health module
 
-Follow the architecture (`meta/product/architecture.md` if it exists, else `meta/core/defaults/architecture.md`) and the source
-root and extensions in `meta/product/stack.md`.
+Follow the architecture (`meta/product/architecture.md` if it exists, else
+`meta/core/defaults/architecture.md`) and the source root, extensions, and
+commands in `meta/product/stack.md`. Names below are file stems.
 
-- entry `index`: `check()` returns status `ok` when the datastore answers.
-- `store`: inserts one row into `health_ping` and reads it back.
-- `migrations/`: one migration creating `health_ping`, applied with the
-  registry migration command, so the migration path is exercised.
-- `tests/`: `AC1 health check reports ok with a live datastore`, through the
-  entry point, against the real datastore, as
-  `meta/core/guides/test.md` and the `test.md` overlay say.
-- `shared/`: the datastore connection, read from the registry's connection
-  variable.
+- `<source root>/_about.md`: one row, `health`, with its purpose.
+- `modules/health/_about.md`: purpose, public API `check`, table
+  `health_ping`, slice `check`.
+- `modules/health/index`: re-exports `check`.
+- `modules/health/store`: inserts one row into `health_ping` and reads it
+  back.
+- `modules/health/migrations/`: one migration creating `health_ping`.
+- `modules/health/slices/check/handler`: `check()` returns status `ok` when
+  the datastore answers.
+- `modules/health/slices/check/` test file: `<init task id>#8 health check
+  reports ok with a live datastore`, through the handler, against the real
+  datastore, as `meta/core/guides/test.md` and the `test.md` overlay say.
+- `shared/`: the datastore connection, read from the connection variable.
+- `app/`: the entry point that wires `health.check` into the product's
+  transport (a route, a CLI command, or a job, per the brief's deploy
+  target).
 
-Stack without a datastore (registry datastore is `none`, by a superseding
-decision): `check()` returns `ok` with the version string, the test asserts
-it, and there is no migration. Say at the gate that the skeleton proves no
+Stack without a datastore (datastore `none`, by a superseding decision):
+`check()` returns `ok` with the version string, the test asserts it, and
+there is no store or migration. Report that the skeleton proves no
 datastore, and why.
 
 ## Steps
 
-1. Write the slice and `shared/`.
+1. Write the module, `shared/`, and `app/`.
 2. Run, in order, and keep the output:
-   - the registry migration command (skip without a datastore);
-   - the registry lint command;
-   - the targeted test command on the slice's `tests/` path;
+   - the migration command (skip without a datastore);
+   - the check command (it includes `structure.py` and the boundary checker);
+   - the targeted test command on the slice's path;
    - the full test command;
    - `meta/core/tools/check-harness.sh`.
 3. Fix and rerun. Three rounds at most; still red: stop and report.
-4. Commit and push (the one push before a gate, see `SKILL.md`). Find the CI
-   run for that commit:
+4. Commit and push. Find the CI run for that commit:
    `gh run list --commit <sha> --limit 1 --json databaseId --jq '.[0].databaseId'`,
    then `gh run watch <id> --exit-status`. The run may take a few seconds to
    appear; retry the list a few times. Red: fix within the same three-round
    budget. Without `gh`: note `CI not checked: gh unavailable`.
-5. Gate: show the outputs of step 2 and the CI result. The user confirms the
-   skeleton.
+5. Report the outputs of step 2 and the CI result to the user.
 
 ## Output
 
-The health slice, `shared/`, a green CI run.
+The health module, `shared/`, `app/`, a green CI run.
 
 Evidence for the criterion: the last line of each command in step 2 and the
 CI run URL. Without a CI result, leave the criterion unchecked and report
@@ -53,5 +60,5 @@ it; the init task stays In Progress until CI is checked.
 
 ## Amend
 
-Rerun step 2 and the CI check only. Change the slice only if a superseding
+Rerun step 2 and the CI check only. Change the module only if a superseding
 decision changed the stack or layout.

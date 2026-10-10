@@ -10,31 +10,33 @@ the Haiku workers in `.claude/agents/`; they need a configured harness, which
 is what this skill builds. Research subagents and the deep-research skill are
 allowed where a phase file says so.
 
-Design: `HD-4` to `HD-10` in `meta/core/decisions.md`. This skill was specified by the
-template's `TASK-2`; in a clone, that task is history, not your task. Your
-task is the init task from step 1.
+Design: `HD-4` to `HD-13` in `meta/core/decisions.md`. Your task is the init
+task from step 1, in the root `backlog/` (the product backlog). The harness
+backlog in `meta/core/backlog/` is template history; never change it.
 
 ## Ground rules
 
 - Propose, the user ratifies (`HD-5`). Nothing a gate covers is written
-  before the gate passes. One exception: the skeleton phase pushes before its
-  gate, because the gate shows the CI result.
+  before the gate passes.
 - Backlog CLI for every Backlog change. Read `backlog instructions
   task-creation` before creating the init task and before the seed phase,
   `task-execution` before step 1, `task-finalization` before closing.
 - Commit and push after each phase, preflight included. Message:
   `init-factory: <phase> (<init task id>)`. If the commit touches `meta/` or
-  `.claude/`, run `meta/core/tools/check-harness.sh` first; a failure holds the
-  commit until fixed. Never force-push.
+  `.claude/`, run `meta/core/tools/check-harness.sh` first; a failure holds
+  the commit until fixed. Never force-push.
 - Never create repositories: no `gh repo create`, no `git init`. The user
   makes the clone and the product remote.
 - Allowed to change: `meta/product/` (practices through
   `meta/core/tools/practices.py` only; an architecture or persistence
   override only by a superseding decision), `.claude/settings.json` (allow
   entries only), `.claude/agents/` (new workers only, Haiku), `CONCEPT.md`,
-  product files at the repo root, `src/`, `scripts/`, CI and container files.
-- Never change: anything under `meta/core/`, `AGENTS.md`, deny entries in
-  `.claude/settings.json`. These belong to the template (`HD-7`).
+  `README.md`, product files at the repo root, `src/`, `scripts/`, CI and
+  container files, the root `backlog/` through the CLI.
+- Never change: anything under `meta/core/`, `meta/_about.md`, `AGENTS.md`,
+  `CLAUDE.md`, this skill, the core agents, deny entries and hooks in
+  `.claude/settings.json`. They belong to the template (`HD-9`);
+  `check-harness.sh` fails when they differ from the harness version.
 - Scratch work that must survive a restart goes in `.cache/init/`
   (gitignored).
 - Multi-line text for `backlog doc update --content` or `--append-notes` must
@@ -87,41 +89,45 @@ these criteria, in order:
 1. `Preflight passed: harness remote with shared history`
 2. `Brief ratified and stored as Backlog doc product-brief`
 3. `Domain and concern facets ratified`
-4. `Stack and architecture ratified: registry has no TBD, decisions recorded in init-decisions`
+4. `Stack and architecture ratified: stack.md has no TBD, decisions recorded in init-decisions`
 5. `Practice packs ratified, vendored, locked and compiled; new packs proposed upstream`
 6. `Environment provisioned and stack overlays written`
 7. `Backlog seeded with milestones and draft slices`
-8. `Walking skeleton green: lint, full tests, check-harness, CI`
+8. `Walking skeleton green: install, migrations, check command, full tests, check-harness, CI`
 
-Then `backlog task edit <id> -s "In Progress" -a @claude`. Check criterion 1
-with the preflight output as evidence. Commit `CONCEPT.md`, the remote
-change, and the task as `init-factory: preflight (<id>)`, and push.
+Then `backlog task edit <id> -s "In Progress" -a @claude`, and
+`backlog config set projectName "<product name>"`. Check criterion 1 with
+the preflight output as evidence. Commit `CONCEPT.md`, the remote change,
+and the task as `init-factory: preflight (<id>)`, and push.
 
 ## 2. Run the phases
 
 For each unchecked criterion, in order:
 
-| Criterion | Phase file |
-|---|---|
-| 2 | `.claude/skills/init-factory/phases/brief.md` |
-| 3 | `.claude/skills/init-factory/phases/facets.md` |
-| 4 | `.claude/skills/init-factory/phases/stack.md` |
-| 5 | `.claude/skills/init-factory/phases/practices.md` |
-| 6 | `.claude/skills/init-factory/phases/provision.md` |
-| 7 | `.claude/skills/init-factory/phases/seed.md` |
-| 8 | `.claude/skills/init-factory/phases/skeleton.md` |
+| Criterion | Phase file | Gate |
+|---|---|---|
+| 2 | `.claude/skills/init-factory/phases/brief.md` | brief |
+| 3 | `.claude/skills/init-factory/phases/facets.md` | facets |
+| 4 | `.claude/skills/init-factory/phases/stack.md` | stack and architecture |
+| 5 | `.claude/skills/init-factory/phases/practices.md` | packs |
+| 6 | `.claude/skills/init-factory/phases/provision.md` | provision and seed (shared) |
+| 7 | `.claude/skills/init-factory/phases/seed.md` | provision and seed (shared) |
+| 8 | `.claude/skills/init-factory/phases/skeleton.md` | none: the evidence is deterministic |
 
 Read the phase file. Do its steps. Hold its gate. Write its outputs. Then:
 
 1. `backlog task edit <id> --check-ac <criterion number>`, only with the
    evidence the phase file names.
-2. `backlog task edit <id> --append-notes "criterion <n>: <outputs>; evidence: <evidence>"`,
-   where `<n>` is the criterion number.
+2. `backlog task edit <id> --append-notes "criterion <n>: <outputs>; evidence: <evidence>"`.
 3. Commit and push.
+
+Provision and seed share one gate: before writing anything for criterion 6,
+draft the provision files and the seed drafts, show both in one table, and
+after acceptance run both phases without another gate.
 
 ## Gate
 
-One gate per phase. Show one table:
+Five gates in all (`HD-5`). Show one table:
 
 | # | Item | Proposal | Why | Rejected alternatives |
 |---|---|---|---|---|
@@ -133,24 +139,27 @@ ratified table, compressed, in the task notes.
 
 ## Decisions
 
-Which gate rows become decisions: every row of the stack gate, and any row
-of another gate that chooses between real alternatives. A row that keeps a
-default already has its decision (`HD-1`, `HD-2`); it gets only
-an `init-decisions` row citing that decision.
+Product decisions live in the root backlog as `decision-n`. Harness
+decisions are `HD-n`; never create those here.
 
-The decision CLI stores only a title and a status. It has no edit command,
-so an old decision's status cannot change; the new title is the link.
+| Gate row | Record |
+|---|---|
+| The stack rows together | One decision: `Stack: <language version>, <framework>, <datastore>, <test runner>`. |
+| A row that supersedes a default (architecture, datastore) | Its own decision, title starting `Supersedes HD-<n>:`. |
+| Any other row that chose between real alternatives | Its own decision. |
+| A row that keeps a default | No decision; its `init-decisions` row cites the `HD-n`. |
+
+The decision CLI stores only a title and a status, and has no edit command.
 
 1. `backlog decision create "<choice, one line>" -s accepted --plain`.
-   A choice that replaces an earlier decision starts its title with
-   `Supersedes decision-<n>:`.
 2. Rationale and rejected alternatives live in the Backlog doc
    `init-decisions` (create it on first use with
    `backlog doc create "init-decisions" -t specification --plain`). Read the
-   doc, append the row, write the whole content back with
+   doc, append one row per gate item, write the whole content back with
    `backlog doc update <doc id> --content`. Row:
-   `| decision-<n> | <choice> | <rationale> | <rejected alternatives> | criterion <n> |`
-3. Every harness file that cites a superseded decision now cites the new one.
+   `| decision-<n> or HD-<n> | <item> | <choice> | <rationale> | <rejected alternatives> | criterion <n> |`
+3. A later change is a new decision whose title starts `Supersedes
+   decision-<n>:`. Never edit an old one.
 
 ## Stop rules
 
@@ -163,8 +172,8 @@ Stop and report instead of looping when:
 - a tool the phase needs is missing (for example Docker for a server
   datastore) and the user does not install it;
 - a change would touch something under "Never change";
-- a deny entry would need to change (needs the user's explicit confirmation,
-  `AGENTS.md`, Governance).
+- a deny entry or the guard hook would need to change (needs the user's
+  explicit confirmation, `AGENTS.md`, Governance).
 
 Not a stop: the central practices repo is unreachable, or `gh` is missing.
 Record it in the notes, continue as the practices and skeleton phases say,
