@@ -43,7 +43,7 @@ datastore, and why.
    - the full test command;
    - `meta/core/tools/check-harness.sh`.
 3. Fix and rerun. Three rounds at most; still red: stop and report.
-4. Commit and push. Find the CI run for that commit:
+4. Commit and `git push origin main`. Find the CI run for that commit:
    `gh run list --commit <sha> --limit 1 --json databaseId --jq '.[0].databaseId'`,
    then `gh run watch <id> --exit-status`. The run may take a few seconds to
    appear; retry the list a few times. Red: fix within the same three-round

@@ -70,6 +70,11 @@ modified_files:
   - .claude/settings.json
   - meta/core/tools/guard.py
   - meta/core/tools/test_guard.py
+  - README.md
+  - >-
+    meta/core/backlog/tasks/task-2 -
+    init-factory-skill-configure-a-cloned-harness-for-one-product.md
+  - meta/core/backlog/tasks/task-4 - Eval-fixtures-for-init-factory.md
 priority: high
 type: enhancement
 ordinal: 5000
@@ -123,4 +128,6 @@ step 4: packet.py + test_packet.py (6 tests) replace searcher (HD-12); orchestra
 step 5: init-factory: product layer paths, never-change list = meta/core + core agents/skill/AGENTS/CLAUDE; five gates (provision+seed shared, skeleton none), one stack decision (HD-14); stack phase proposes boundary, duplication, dead-code checkers and writes scripts/check.sh with structure.py; practices append check-cmd rules to check.sh; provision writes README and overlays with TASK-n#k idiom; seed proposes modules and module/slice drafts labelled module:<m>; skeleton is a health module with app/ wiring.
 
 step 6: guard.py PreToolUse hook (force push in all spellings incl. +refspec, --force-with-lease, -uf, git -C; rm with recursive+force flags in any order; sudo; nested bash -c/eval/env/xargs) + test_guard.py (3 tests, 37 cases); verified live: hook blocked rm -fr in this session. settings.json: stack-specific allows (npm, npx, node, make) removed (init adds them); CAVEMAN env moved to gitignored .claude/settings.local.json; deny list unchanged.
+
+step 7: README rewritten as human entry (start a product, layout, harness work); meta/core/design.md rewritten without status/next (layers table, parts, flow with tidy, product code, evaluation); meta/_about.md lists all tools. TASK-5 ACs reworded to what was built (packet.py, design.md). Notes added to TASK-2 and TASK-4 mapping old paths.
 <!-- SECTION:NOTES:END -->

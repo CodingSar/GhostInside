@@ -10,7 +10,7 @@ the Haiku workers in `.claude/agents/`; they need a configured harness, which
 is what this skill builds. Research subagents and the deep-research skill are
 allowed where a phase file says so.
 
-Design: `HD-4` to `HD-13` in `meta/core/decisions.md`. Your task is the init
+Design: `HD-4` to `HD-14` in `meta/core/decisions.md`. Your task is the init
 task from step 1, in the root `backlog/` (the product backlog). The harness
 backlog in `meta/core/backlog/` is template history; never change it.
 
@@ -21,7 +21,9 @@ backlog in `meta/core/backlog/` is template history; never change it.
 - Backlog CLI for every Backlog change. Read `backlog instructions
   task-creation` before creating the init task and before the seed phase,
   `task-execution` before step 1, `task-finalization` before closing.
-- Commit and push after each phase, preflight included. Message:
+- Commit and push after each phase, preflight included, always with
+  `git push origin main` (never a bare `git push`: after the remote rename,
+  `main` could still track the template). Message:
   `init-factory: <phase> (<init task id>)`. If the commit touches `meta/` or
   `.claude/`, run `meta/core/tools/check-harness.sh` first; a failure holds
   the commit until fixed. Never force-push.
@@ -52,8 +54,9 @@ backlog in `meta/core/backlog/` is template history; never change it.
    normalizes to `github.com/codingsar/ghostinside`.
    - If `origin` is the template: ask the user whether this is a product
      clone. If yes, ask for the product remote URL (the user creates that
-     repo), then run `git remote rename origin harness` and
-     `git remote add origin <url>`. If no, stop: init never runs on the
+     repo), then run `git remote rename origin harness`,
+     `git remote add origin <url>`, and `git push -u origin main` so `main`
+     tracks the product remote. If no, stop: init never runs on the
      template.
    - If there is no `harness` remote, add it:
      `git remote add harness git@github.com:CodingSar/GhostInside.git`.
@@ -61,7 +64,8 @@ backlog in `meta/core/backlog/` is template history; never change it.
    harness/main`. If it fails, stop and explain: the clone must come from
    `git clone` of the template, not the GitHub template button, so harness
    upgrades can merge later.
-4. On `main`. Working tree: on a first run it must be clean; on resume,
+4. On `main`. Working tree: on a first run it must be clean, except an
+   untracked `CONCEPT.md`; on resume,
    uncommitted changes are left from an interrupted phase. Show
    `git status --short` and ask the user to keep (commit them under the
    current phase) or discard them. Never discard on your own.
@@ -98,7 +102,8 @@ these criteria, in order:
 Then `backlog task edit <id> -s "In Progress" -a @claude`, and
 `backlog config set projectName "<product name>"`. Check criterion 1 with
 the preflight output as evidence. Commit `CONCEPT.md`, the remote change,
-and the task as `init-factory: preflight (<id>)`, and push.
+and the task as `init-factory: preflight (<id>)`, and push with
+`git push origin main`.
 
 ## 2. Run the phases
 
@@ -119,7 +124,7 @@ Read the phase file. Do its steps. Hold its gate. Write its outputs. Then:
 1. `backlog task edit <id> --check-ac <criterion number>`, only with the
    evidence the phase file names.
 2. `backlog task edit <id> --append-notes "criterion <n>: <outputs>; evidence: <evidence>"`.
-3. Commit and push.
+3. Commit and `git push origin main`.
 
 Provision and seed share one gate: before writing anything for criterion 6,
 draft the provision files and the seed drafts, show both in one table, and
