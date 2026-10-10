@@ -24,7 +24,7 @@ replace these rules for the same topic.
 ## Doubles
 
 - Mock only external boundaries: clock, randomness, network.
-- Never mock the database (see `meta/registry/persistence.md`).
+- Never mock the database (see `meta/core/defaults/persistence.md`).
 - Never mock the unit under test.
 - Do not assert internal call counts or call order.
 

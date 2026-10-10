@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Tests for practices.py. Run: python3 -I meta/tools/test_practices.py
+"""Tests for practices.py. Run: python3 -I meta/core/tools/test_practices.py
 
 Everything runs in temp dirs: a local bare repo stands in for the central
-repo, a fake `gh` stands in for GitHub. The real meta/practices is untouched.
+repo, a fake `gh` stands in for GitHub. The real meta/product/practices is untouched.
 """
 
 import json

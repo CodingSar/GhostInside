@@ -11,12 +11,12 @@ allowlist, the targeted test command, the review rules, and your iteration
 budget. Follow the review rules in the code you write; a review rule that
 conflicts with a test is a deviation.
 
-If the file `implement.md` exists in `meta/guides/stack/`, read it next. It
+If the file `implement.md` exists in `meta/product/overlays/`, read it next. It
 adds stack specifics (commands, paths, idioms) to this guide. It never relaxes
 a forbidden item.
 
 Read only the allowlisted files and the test files for the covered criteria.
-Read `meta/architecture/vertical-slice.md` once if you are unsure where a
+Read `meta/core/defaults/architecture.md` once if you are unsure where a
 change belongs.
 
 ## 2. Implement
@@ -27,7 +27,7 @@ change belongs.
 - Keep to the slice: other slices are reached only through their entry file.
 - Persistence uses PostgreSQL only, through the slice's `store` file, and only
   for tables the slice owns.
-- Add a dependency only if it is already listed in `meta/registry/`. Otherwise
+- Add a dependency only if it is already listed in `meta/product/stack.md`. Otherwise
   deviation.
 
 ## 3. Check

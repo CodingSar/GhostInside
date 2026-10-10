@@ -10,7 +10,7 @@ The acceptance criteria are the spec. You add no rules.
 
 ## First step
 
-Read `meta/guides/test.md` in full. It is your how-to. Follow it.
+Read `meta/core/guides/test.md` in full. It is your how-to. Follow it.
 
 ## Input
 

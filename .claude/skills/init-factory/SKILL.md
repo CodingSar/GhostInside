@@ -10,13 +10,13 @@ the Haiku workers in `.claude/agents/`; they need a configured harness, which
 is what this skill builds. Research subagents and the deep-research skill are
 allowed where a phase file says so.
 
-Design: Backlog `decision-4` to `decision-8`. This skill was specified by the
+Design: `HD-4` to `HD-10` in `meta/core/decisions.md`. This skill was specified by the
 template's `TASK-2`; in a clone, that task is history, not your task. Your
 task is the init task from step 1.
 
 ## Ground rules
 
-- Propose, the user ratifies (`decision-5`). Nothing a gate covers is written
+- Propose, the user ratifies (`HD-5`). Nothing a gate covers is written
   before the gate passes. One exception: the skeleton phase pushes before its
   gate, because the gate shows the CI result.
 - Backlog CLI for every Backlog change. Read `backlog instructions
@@ -24,18 +24,17 @@ task is the init task from step 1.
   `task-execution` before step 1, `task-finalization` before closing.
 - Commit and push after each phase, preflight included. Message:
   `init-factory: <phase> (<init task id>)`. If the commit touches `meta/` or
-  `.claude/`, run `meta/tools/check-harness.sh` first; a failure holds the
+  `.claude/`, run `meta/core/tools/check-harness.sh` first; a failure holds the
   commit until fixed. Never force-push.
 - Never create repositories: no `gh repo create`, no `git init`. The user
   makes the clone and the product remote.
-- Allowed to change: `meta/registry/`, `meta/practices/` (through
-  `meta/tools/practices.py` only), `meta/architecture/` (only by a superseding
-  decision), `meta/guides/stack/`, `.claude/settings.json` (allow entries
-  only), `.claude/agents/` (new workers only, Haiku), `CONCEPT.md`, product
-  files at the repo root, `src/`, `scripts/`, CI and container files.
-- Never change: core guides in `meta/guides/` (outside `stack/`),
-  `meta/tools/`, `meta/docs/`, `AGENTS.md`, deny entries in
-  `.claude/settings.json`. These belong to the template (`decision-7`).
+- Allowed to change: `meta/product/` (practices through
+  `meta/core/tools/practices.py` only; an architecture or persistence
+  override only by a superseding decision), `.claude/settings.json` (allow
+  entries only), `.claude/agents/` (new workers only, Haiku), `CONCEPT.md`,
+  product files at the repo root, `src/`, `scripts/`, CI and container files.
+- Never change: anything under `meta/core/`, `AGENTS.md`, deny entries in
+  `.claude/settings.json`. These belong to the template (`HD-7`).
 - Scratch work that must survive a restart goes in `.cache/init/`
   (gitignored).
 - Multi-line text for `backlog doc update --content` or `--append-notes` must
@@ -136,7 +135,7 @@ ratified table, compressed, in the task notes.
 
 Which gate rows become decisions: every row of the stack gate, and any row
 of another gate that chooses between real alternatives. A row that keeps a
-default already has its decision (`decision-1`, `decision-2`); it gets only
+default already has its decision (`HD-1`, `HD-2`); it gets only
 an `init-decisions` row citing that decision.
 
 The decision CLI stores only a title and a status. It has no edit command,
@@ -165,7 +164,7 @@ Stop and report instead of looping when:
   datastore) and the user does not install it;
 - a change would touch something under "Never change";
 - a deny entry would need to change (needs the user's explicit confirmation,
-  `meta/docs/harness-review.md` rule 5).
+  `AGENTS.md`, Governance).
 
 Not a stop: the central practices repo is unreachable, or `gh` is missing.
 Record it in the notes, continue as the practices and skeleton phases say,
@@ -178,4 +177,4 @@ summary: the product brief doc id, decisions created, packs vendored and PRs
 opened (or not opened), files provisioned, drafts seeded, skeleton evidence.
 Set Done. Tell the user the next step: promote a draft
 (`backlog draft promote <id>`) and run the orchestrator
-(`meta/guides/orchestrate.md`).
+(`meta/core/guides/orchestrate.md`).

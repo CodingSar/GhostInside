@@ -1,12 +1,12 @@
 # Phase: stack and architecture
 
-Goal: every value in `meta/registry/runner.md` set, the datastore and
+Goal: every value in `meta/product/stack.md` set, the datastore and
 architecture defaults kept or superseded on purpose, the project scaffolded
 so its tools run, and the stack facets known.
 
 ## Items to propose
 
-One item per row of `meta/registry/runner.md`, plus architecture:
+One item per row of `meta/product/stack.md`, plus architecture:
 
 | Item | Default |
 |---|---|
@@ -15,13 +15,13 @@ One item per row of `meta/registry/runner.md`, plus architecture:
 | package manager | the language's mainstream one |
 | install command | from the package manager |
 | source root and file extensions | `src/` and the language's |
-| datastore | PostgreSQL (`decision-2`) |
+| datastore | PostgreSQL (`HD-2`) |
 | connection variable | `DATABASE_URL` |
 | migration command | a mainstream migration tool for the stack; `none` without a datastore |
 | test runner, full and targeted test commands | the language's mainstream runner |
 | lint command | the language's mainstream linter and formatter check |
 | dependencies approved | the smallest set the skeleton needs |
-| architecture | vertical slices (`decision-1`) |
+| architecture | vertical slices (`HD-1`) |
 
 ## Rules
 
@@ -29,9 +29,9 @@ One item per row of `meta/registry/runner.md`, plus architecture:
    stored data (CLI tool) means no PostgreSQL; an embedded target means no
    server datastore; a single-screen tool may not fit slices. A reason is a
    brief field, quoted in Why.
-2. Replacing a default is a superseding decision (`decision-6`). Then update
-   the file that holds the default: `meta/registry/persistence.md` or
-   `meta/architecture/vertical-slice.md`. Rewrite it for the new choice and
+2. Replacing a default is a superseding decision (`HD-6`). Then update
+   the file that holds the default: `meta/core/defaults/persistence.md` or
+   `meta/core/defaults/architecture.md`. Rewrite it for the new choice and
    keep its existing sections. The core test guide assumes a real
    PostgreSQL; when the datastore is superseded, the `test.md` overlay
    (provision phase) names the replacement and how tests reach it.
@@ -52,7 +52,7 @@ keep a default say so.
 
 ## Output
 
-1. `meta/registry/runner.md`: every row set. Replace the Status line with
+1. `meta/product/stack.md`: every row set. Replace the Status line with
    `Status: set by init-factory, <init task id>.` No TBD may remain.
 2. Superseded default files rewritten as rule 2 says.
 3. Decisions and `init-decisions` rows as `SKILL.md` says (every stack row).
@@ -63,7 +63,7 @@ keep a default say so.
 5. Task note: `stack facets: lang/<x>, framework/<y>, datastore/<z>` (omit
    kinds that do not apply).
 
-Evidence for the criterion: `! grep -q TBD meta/registry/runner.md` exits 0,
+Evidence for the criterion: `! grep -q TBD meta/product/stack.md` exits 0,
 the install command exits 0, and the decision ids.
 
 ## Amend

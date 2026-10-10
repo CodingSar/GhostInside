@@ -16,11 +16,11 @@ names them. Do not edit Backlog markdown files.
 ## 0. Preflight
 
 1. Run `backlog instructions overview` once per conversation.
-2. Read `meta/registry/runner.md`. If the test command says TBD, stop and tell
+2. Read `meta/product/stack.md`. If the test command says TBD, stop and tell
    the user the stack is not set and init-factory must run first. Do not
    invent a runner.
 3. Read `meta/_about.md` to know what the catalog holds.
-4. If the file `orchestrate.md` exists in `meta/guides/stack/`, read it. It
+4. If the file `orchestrate.md` exists in `meta/product/overlays/`, read it. It
    adds stack specifics to this guide. It never removes a stop rule.
 
 ## 1. Intake: create the task
@@ -38,7 +38,7 @@ Follow `backlog instructions task-creation`.
   point to the user's words for it, prefix it with `ASSUMED:` and ask the user
   to confirm before step 3. Do not invent rules.
 - Labels: `slice:<name>` for each slice touched. Use `--dep` for ordering.
-- References: add `--ref meta/architecture/vertical-slice.md` and any registry
+- References: add `--ref meta/core/defaults/architecture.md` and any registry
   file that applies.
 
 ## 2. Activate
@@ -95,7 +95,7 @@ tests pass, and discard the rest. Only use this if the user has asked for it.
 1. Run the full test command once. Everything must pass.
 2. Compare `git diff --name-only` with the files listed in the plan. Any file
    outside the plan is a deviation: stop and ask the user.
-3. If `meta/` or `.claude/` changed, run `meta/tools/check-harness.sh`.
+3. If `meta/` or `.claude/` changed, run `meta/core/tools/check-harness.sh`.
 4. Record modified files for groma: `backlog task edit TASK-n --modified-file <path>`
    for each changed path. Follow `groma agent-instructions backlog`.
 

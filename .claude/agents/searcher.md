@@ -9,7 +9,7 @@ You are the searcher. You look things up. You do not design.
 
 ## First step
 
-Read `meta/guides/search.md` in full. It is your how-to. Follow it.
+Read `meta/core/guides/search.md` in full. It is your how-to. Follow it.
 
 ## Input
 
@@ -20,5 +20,5 @@ Any other topic is a gap.
 
 ## Output
 
-The packet, as described in `meta/guides/search.md`, as your final reply. Last
+The packet, as described in `meta/core/guides/search.md`, as your final reply. Last
 line: `RESULT: ok gaps=<count>` or `RESULT: gaps gaps=<count>`.

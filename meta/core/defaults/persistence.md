@@ -1,7 +1,7 @@
 # Registry: persistence (default)
 
-Decision: Backlog `decision-2`. PostgreSQL is the only datastore. This is a
-default: `init-factory` may supersede it by a ratified decision (`decision-6`).
+Decision: Backlog `HD-2`. PostgreSQL is the only datastore. This is a
+default: `init-factory` may supersede it by a ratified decision (`HD-6`).
 
 - No other database: no SQLite, no document store, no key-value store as
   primary storage. A cache or queue needs a Backlog decision first.

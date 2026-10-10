@@ -1,14 +1,20 @@
 ---
-description: Catalog of the harness. Read this first, then only the directories the current job names.
+description: Catalog of the harness. Read this first, then only the files the current job names.
 ---
 
-| Directory | What it holds |
-|---|---|
-| `guides/` | Procedures. The orchestrator reads `orchestrate.md`. Each worker reads the guide named in its agent file. `guides/stack/` holds per-stack overlays written by init-factory. |
-| `architecture/` | Structure defaults. Default style: vertical slices. |
-| `registry/` | Fixed choices: datastore, test runner, approved dependencies. Runner is TBD until init-factory. |
-| `practices/` | Best-practice rules by topic (testing), plus facet packs vendored by init-factory with their lock and generated `review.md`. |
-| `tools/` | Harness checks, run before harness commits. `practices.py` vendors and verifies practice packs. |
-| `docs/` | Governance: how harness changes are made and rolled back. |
+Two layers (`HD-9`). `core/` belongs to the template and is never edited in a
+product clone. `product/` is written by init-factory in the clone. For
+`architecture.md` and `persistence.md`, a file in `product/` overrides the
+default of the same name in `core/defaults/`.
 
-Decisions are not in these files. They live in Backlog: `backlog decision list --plain`.
+| Path | What it holds |
+|---|---|
+| `core/guides/` | Procedures. The orchestrator reads `orchestrate.md`; each worker reads the guide its agent file names. |
+| `core/defaults/` | Defaults a product may override: `architecture.md` (modules of slices), `persistence.md` (PostgreSQL only). |
+| `core/tools/` | Deterministic tools: `check-harness.sh` (run before harness commits), `practices.py` (practice packs). |
+| `core/decisions.md` | Harness decisions `HD-n` with rationale. |
+| `core/backlog/` | Harness backlog (`BACKLOG_CWD=meta/core`). History in a clone. |
+| `product/` | Product layer: stack, overlays, practices, overrides. See `product/_about.md`. |
+
+Product decisions live in the root Backlog: `backlog decision list --plain`,
+rationale in the Backlog doc `init-decisions`.

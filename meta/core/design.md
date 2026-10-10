@@ -17,13 +17,13 @@ domain practices and the user ratifies them.
 | Part | Where | Role |
 |---|---|---|
 | Backlog tasks | `backlog/` | Plan of record. Acceptance criteria are the cases. |
-| Orchestrator | main thread, `meta/guides/orchestrate.md` | Owns one task from intake to Done. Launches workers. Runs tests. Commits and pushes. |
+| Orchestrator | main thread, `meta/core/guides/orchestrate.md` | Owns one task from intake to Done. Launches workers. Runs tests. Commits and pushes. |
 | Workers | `.claude/agents/`, Haiku | `searcher` (read-only), `test-writer`, `implementer`. Each reads one guide first. |
-| Guides | `meta/guides/` | Procedures. Core guides are written by a human and owned by the template. `init-factory` writes stack overlays in `meta/guides/stack/` only. |
-| Defaults | `meta/architecture/`, `meta/registry/` | Vertical slices. PostgreSQL only. Runner TBD. Defaults are priors that `init-factory` may supersede by a ratified decision. |
-| Practices | `meta/practices/` | Testing rules. `init-factory` vendors facet packs from the central repo `CodingSar/GhostInsidePractices` and pins them in `practices.lock`. |
+| Guides | `meta/core/guides/` | Procedures. Core guides are written by a human and owned by the template. `init-factory` writes stack overlays in `meta/product/overlays/` only. |
+| Defaults | `meta/core/defaults/`, `meta/product/stack.md` | Vertical slices. PostgreSQL only. Runner TBD. Defaults are priors that `init-factory` may supersede by a ratified decision. |
+| Practices | `meta/product/practices/` | Testing rules. `init-factory` vendors facet packs from the central repo `CodingSar/GhostInsidePractices` and pins them in `practices.lock`. |
 | init-factory | `.claude/skills/init-factory/` | Main-thread skill run once per product clone, re-run to amend. Brief, facets, stack, packs, provision, seed, walking skeleton. Gated by user ratification. |
-| Checks | `meta/tools/check-harness.sh` | Deterministic checks on the harness itself. |
+| Checks | `meta/core/tools/check-harness.sh` | Deterministic checks on the harness itself. |
 
 ## Flow
 
@@ -70,17 +70,17 @@ gets. Fixtures are Backlog tasks with known outcomes, so runs are comparable.
 
 ## Settled
 
-- Vertical slices by default (`decision-1`).
-- PostgreSQL only by default (`decision-2`).
-- Stack and runner decided through `init-factory` (`decision-3`): it
-  proposes, the user ratifies at grouped gates (`decision-5`).
+- Vertical slices by default (`HD-1`).
+- PostgreSQL only by default (`HD-2`).
+- Stack and runner decided through `init-factory` (`HD-3`): it
+  proposes, the user ratifies at grouped gates (`HD-5`).
 - Template and clone: products are clones with a `harness` remote
-  (`decision-4`).
-- Defaults are priors, superseded only by a ratified decision (`decision-6`).
+  (`HD-4`).
+- Defaults are priors, superseded only by a ratified decision (`HD-6`).
 - Core guides are template-owned; stack specifics go in overlays
-  (`decision-7`).
+  (`HD-7`).
 - Practices come from a central repo as facet packs, vendored and pinned,
-  delta-checked after 7 days; new packs go back by PR (`decision-8`).
+  delta-checked after 7 days; new packs go back by PR (`HD-8`).
 - Haiku only for workers until the flow works.
 - No headless launch. Workers are subagents launched from the main thread.
 - Harness changes live on `main`; commit and push often.

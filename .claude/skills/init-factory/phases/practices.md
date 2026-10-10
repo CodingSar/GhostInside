@@ -4,12 +4,12 @@ Goal: one current, approved pack per facet, vendored and locked, with every
 enforceable rule compiled into a tool, and new packs offered upstream.
 
 Pack format and index: the central repo's README
-(`.cache/practices/README.md` after fetch). Tool: `meta/tools/practices.py`.
+(`.cache/practices/README.md` after fetch). Tool: `meta/core/tools/practices.py`.
 
 ## Steps
 
 1. Facets = the ratified domain and concern facets plus the stack facets
-   from the task notes. `python3 -I meta/tools/practices.py fetch`, then
+   from the task notes. `python3 -I meta/core/tools/practices.py fetch`, then
    `status <all ids>`. If `fetch` fails, the central repo is unreachable:
    note `central unreachable: <error>`, treat every facet as a miss, skip
    step 11, and continue.
@@ -29,7 +29,7 @@ Pack format and index: the central repo's README
    - `lang/`, `framework/`, `datastore/`: one `general-purpose` subagent with
      the prompt below, tier `standard`.
    Write each draft to `.cache/init/packs/<id>.md`.
-5. `python3 -I meta/tools/practices.py check .cache/init/packs/<id>.md` for
+5. `python3 -I meta/core/tools/practices.py check .cache/init/packs/<id>.md` for
    every draft (the path must end in `<id>.md`). Fix format errors once. Still
    failing: stop.
 6. Read all packs together. Remove duplicates across new and refreshed packs.
@@ -51,18 +51,18 @@ Pack format and index: the central repo's README
    `.cache/init/packs/`. Propose that copy upstream only if the user says
    the rule is wrong in general, not just for this product.
 9. Vendor the exact ratified set:
-   `python3 -I meta/tools/practices.py vendor <central ids> <.cache/init/packs/... files>`,
+   `python3 -I meta/core/tools/practices.py vendor <central ids> <.cache/init/packs/... files>`,
    then `verify`. The lock records `central` or `local`; refreshed and new
    packs are both `local` until their PR merges.
 10. Compile the plan from step 7. `vendor` regenerates
-    `meta/practices/enforced.md` and `review.md`; never edit them. Edit the
+    `meta/product/practices/enforced.md` and `review.md`; never edit them. Edit the
     linter config, write `scripts/practice-checks.sh` (exits non-zero on any
     failure) if there are check-cmd rules, update the lint command in
-    `meta/registry/runner.md`, and run it once: it must exit 0 on the
+    `meta/product/stack.md`, and run it once: it must exit 0 on the
     scaffold. Note `review via overlay: <rule ids>` for the provision phase.
 11. Upstream: for each refreshed or new pack (and each local copy the user
     chose to propose),
-    `python3 -I meta/tools/practices.py propose .cache/init/packs/<id>.md`.
+    `python3 -I meta/core/tools/practices.py propose .cache/init/packs/<id>.md`.
     Exit 0: record the PR URL. Exit 3: record its `PR not opened` line, which
     names the pushed branch for a manual PR later. Rerunning `propose` with
     the same file is safe.
@@ -86,7 +86,7 @@ file section>.
 
 ## Output
 
-`meta/practices/packs/`, `practices.lock`, `review.md`, `enforced.md`, the
+`meta/product/practices/packs/`, `practices.lock`, `review.md`, `enforced.md`, the
 linter config, `scripts/practice-checks.sh` if any check-cmd rules, the lint
 command in the registry, PR URLs in notes.
 

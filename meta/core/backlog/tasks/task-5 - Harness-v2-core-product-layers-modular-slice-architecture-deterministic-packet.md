@@ -7,13 +7,46 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:02'
+updated_date: '2026-10-10 09:05'
 labels: []
 dependencies: []
 modified_files:
   - backlog/config.yml
   - meta/core/backlog
   - AGENTS.md
+  - .claude/agents/implementer.md
+  - .claude/agents/searcher.md
+  - .claude/agents/test-writer.md
+  - .claude/skills/init-factory/SKILL.md
+  - .claude/skills/init-factory/phases/facets.md
+  - .claude/skills/init-factory/phases/practices.md
+  - .claude/skills/init-factory/phases/provision.md
+  - .claude/skills/init-factory/phases/seed.md
+  - .claude/skills/init-factory/phases/skeleton.md
+  - .claude/skills/init-factory/phases/stack.md
+  - meta/_about.md
+  - meta/core/decisions.md
+  - meta/core/defaults/architecture.md
+  - meta/core/defaults/persistence.md
+  - meta/core/defaults/testing.md
+  - meta/core/design.md
+  - meta/core/guides/implement.md
+  - meta/core/guides/orchestrate.md
+  - meta/core/guides/search.md
+  - meta/core/guides/test.md
+  - meta/core/tools/check-harness.sh
+  - meta/core/tools/practices.py
+  - meta/core/tools/test_practices.py
+  - meta/docs/harness-review.md
+  - meta/guides/stack/_about.md
+  - meta/practices/_about.md
+  - meta/product/_about.md
+  - meta/product/practices/enforced.md
+  - meta/product/practices/practices.lock
+  - meta/product/practices/review.md
+  - meta/product/stack.md
+  - meta/registry/_about.md
+  - meta/tools/check-harness.sh
 priority: high
 type: enhancement
 ordinal: 5000
@@ -57,4 +90,6 @@ Commit and push after each step; check-harness before each commit.
 
 <!-- SECTION:NOTES:BEGIN -->
 step 1: harness backlog moved to meta/core/backlog, empty product backlog/ at root (backlog init, integration none). Verified: root task list empty, BACKLOG_CWD=meta/core lists TASK-1..5.
+
+step 2: meta split into core/ (guides, defaults, tools, decisions.md, design.md, backlog) and product/ (stack.md, practices/, overlays/ later). decisions.md HD-1..HD-10 with rationale; decision-9/10 created in harness backlog; citations renamed decision-n -> HD-n. harness-review.md merged into AGENTS.md Governance. check-harness: optional product refs, tests glob, clone check (template-owned paths vs merge-base with harness/main) - verified FAIL on edited core guide in scratch clone, ok when clean.
 <!-- SECTION:NOTES:END -->

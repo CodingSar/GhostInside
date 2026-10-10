@@ -1,7 +1,7 @@
 # Phase: seed
 
 Goal: a starting backlog the user can promote from. Drafts, not tasks: the
-orchestrator owns real tasks (`meta/guides/orchestrate.md`).
+orchestrator owns real tasks (`meta/core/guides/orchestrate.md`).
 
 Read `backlog instructions task-creation` first.
 
@@ -13,7 +13,7 @@ Every criterion ends with exactly one source tag:
 |---|---|
 | `[brief: <field>]` | The criterion follows from that `product-brief` field. |
 | `[pack: <pack id> <rule ID>]` | The criterion enforces a `test` rule of a vendored pack. |
-| prefix `ASSUMED:` instead of a tag | Neither source supports it. The orchestrator must confirm it with the user before planning (`meta/guides/orchestrate.md`, step 1). |
+| prefix `ASSUMED:` instead of a tag | Neither source supports it. The orchestrator must confirm it with the user before planning (`meta/core/guides/orchestrate.md`, step 1). |
 
 ## Steps
 
@@ -27,7 +27,7 @@ Every criterion ends with exactly one source tag:
      with its source tag;
    - label `slice:<name>`, its milestone.
 4. One draft `Practice tests` with one criterion per `test` rule in
-   `meta/practices/enforced.md`, tagged `[pack: ...]`, if there are any.
+   `meta/product/practices/enforced.md`, tagged `[pack: ...]`, if there are any.
 5. Gate: milestones, then one row per draft. Proposal = title, criteria
    count, `ASSUMED:` count. Why = the core job or pack. Rejected
    alternatives = slices merged or split, or `-`.

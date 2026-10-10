@@ -13,7 +13,7 @@ ratified stack, and the workers know the stack specifics.
 | CI | `.github/workflows/ci.yml` | Datastore as a service container, toolchain setup, the registry install command, migration command, lint command, and full test command, verbatim. |
 | devcontainer | `.devcontainer/devcontainer.json` | Same toolchain, attached to the compose datastore. |
 | permissions | `.claude/settings.json` | Allow entries for the package manager, test runner, linter, migration tool, and `docker compose`. Add only. Never remove an entry. Never touch `deny`. |
-| overlays | `orchestrate.md`, `test.md`, `implement.md` in `meta/guides/stack/` | As `meta/guides/stack/_about.md` says: commands, paths, extensions, idioms. Short. |
+| overlays | `orchestrate.md`, `test.md`, `implement.md` in `meta/product/overlays/` | As `meta/product/overlays/_about.md` says: commands, paths, extensions, idioms. Short. |
 | ignore | `.gitignore` | Build output, virtual environments, `.env`. Keep existing lines. |
 
 ## Overlay content

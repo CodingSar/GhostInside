@@ -9,7 +9,7 @@ the spec; the implementer must make the tests pass without changing them.
 From the prompt: the task id, the criteria with numbers, the slice path, the
 testing packet, the review rules, and the test command.
 
-If the file `test.md` exists in `meta/guides/stack/`, read it next. It adds
+If the file `test.md` exists in `meta/product/overlays/`, read it next. It adds
 stack specifics (commands, paths, file extensions, test idioms) to this guide.
 It never relaxes a forbidden item.
 
@@ -33,7 +33,7 @@ Read the slice folder if it exists, for names and existing signatures only.
 
 - Prefer end-to-end style for behaviour: call the slice's entry file, use a
   real PostgreSQL database through the connection in
-  `meta/registry/persistence.md`, and assert the returned value or the state
+  `meta/core/defaults/persistence.md`, and assert the returned value or the state
   you can read back.
 - Pure rules may use direct unit calls.
 - Never mock the database. Mock only the clock, randomness, and network.

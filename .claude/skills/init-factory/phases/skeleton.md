@@ -6,8 +6,8 @@ harness proof, not product work, so it does not go through the orchestrator.
 
 ## The health slice
 
-Follow `meta/architecture/` (the default or its replacement) and the source
-root and extensions in `meta/registry/runner.md`.
+Follow the architecture (`meta/product/architecture.md` if it exists, else `meta/core/defaults/architecture.md`) and the source
+root and extensions in `meta/product/stack.md`.
 
 - entry `index`: `check()` returns status `ok` when the datastore answers.
 - `store`: inserts one row into `health_ping` and reads it back.
@@ -15,7 +15,7 @@ root and extensions in `meta/registry/runner.md`.
   registry migration command, so the migration path is exercised.
 - `tests/`: `AC1 health check reports ok with a live datastore`, through the
   entry point, against the real datastore, as
-  `meta/practices/generic/testing.md` and the `test.md` overlay say.
+  `meta/core/defaults/testing.md` and the `test.md` overlay say.
 - `shared/`: the datastore connection, read from the registry's connection
   variable.
 
@@ -32,7 +32,7 @@ datastore, and why.
    - the registry lint command;
    - the targeted test command on the slice's `tests/` path;
    - the full test command;
-   - `meta/tools/check-harness.sh`.
+   - `meta/core/tools/check-harness.sh`.
 3. Fix and rerun. Three rounds at most; still red: stop and report.
 4. Commit and push (the one push before a gate, see `SKILL.md`). Find the CI
    run for that commit:

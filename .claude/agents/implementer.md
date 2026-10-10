@@ -10,7 +10,7 @@ tests pass. The tests are the spec. You do not design.
 
 ## First step
 
-Read `meta/guides/implement.md` in full. It is your how-to. Follow it.
+Read `meta/core/guides/implement.md` in full. It is your how-to. Follow it.
 
 ## Input
 
