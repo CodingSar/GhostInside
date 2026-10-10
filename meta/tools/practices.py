@@ -12,7 +12,8 @@ Subcommands:
   vendor [<id|pack.md>...]  vendor exactly this set (may be empty) into meta/practices/packs/,
                             write practices.lock, regenerate review.md and enforced.md
   verify                    exit 1 when vendored files do not match the lock
-  propose <pack.md>         open a PR adding or replacing the pack in the central repo
+  propose <pack.md>         open a PR adding or replacing the pack in the central repo;
+                            safe to rerun; exit 3 = branch pushed, PR not opened
 
 Python standard library only. This is harness tooling, not the product stack.
 """
@@ -39,6 +40,7 @@ PACKS = PRACTICES / "packs"
 LOCK = PRACTICES / "practices.lock"
 REVIEW = PRACTICES / "review.md"
 ENFORCED = PRACTICES / "enforced.md"
+GH = os.environ.get("GHOSTINSIDE_GH", "gh")
 
 KINDS = ("lang", "framework", "datastore", "domain", "concern")
 DEEP_KINDS = ("domain", "concern")
@@ -317,41 +319,63 @@ def cmd_verify(_args):
 # ---------- upstream ----------
 
 def cmd_propose(args):
+    """Push a branch with the pack and open a PR. Safe to rerun.
+
+    The branch name carries a hash of the pack, so a rerun with the same pack
+    reuses the pushed branch and its PR. Exit 3 means the branch is pushed but
+    no PR was opened (gh missing or failing); the message names the branch.
+    """
     src = Path(args.file)
     errors = check_text(src.read_text())
     if errors:
         fail("; ".join(errors))
     meta, _, _ = parse_pack(src.read_text())
     pid = meta["id"]
-    branch = f"pack/{pid.replace('/', '-')}-{meta['researched']}"
+    branch = f"pack/{pid.replace('/', '-')}-{meta['researched']}-{sha256(src)[:8]}"
     with tempfile.TemporaryDirectory() as tmp:
         work = Path(tmp) / "central"
         git("clone", "-q", CENTRAL_URL, str(work))
-        git("checkout", "-q", "-b", branch, cwd=work)
         dest = work / f"{pid}.md"
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        existed = dest.exists()
-        shutil.copyfile(src, dest)
-        idx_path = work / "index.json"
-        idx = json.loads(idx_path.read_text())
-        packs = [p for p in idx["packs"] if p["id"] != pid]
-        packs.append({"id": pid, "path": f"{pid}.md", "researched": meta["researched"], "tier": meta["tier"]})
-        idx["packs"] = sorted(packs, key=lambda p: p["id"])
-        idx_path.write_text(json.dumps(idx, indent=2) + "\n")
-        verb = "Refresh" if existed else "Add"
-        git("add", "-A", cwd=work)
-        git("commit", "-q", "-m", f"{verb} pack {pid} (researched {meta['researched']})", cwd=work)
-        git("push", "-q", "-u", "origin", branch, cwd=work)
+        verb = "Refresh" if dest.exists() else "Add"
+        if git("ls-remote", "--heads", "origin", branch, cwd=work):
+            print(f"branch already pushed: {branch}")
+        else:
+            git("checkout", "-q", "-b", branch, cwd=work)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(src, dest)
+            idx_path = work / "index.json"
+            idx = json.loads(idx_path.read_text())
+            packs = [p for p in idx["packs"] if p["id"] != pid]
+            packs.append({"id": pid, "path": f"{pid}.md", "researched": meta["researched"], "tier": meta["tier"]})
+            idx["packs"] = sorted(packs, key=lambda p: p["id"])
+            idx_path.write_text(json.dumps(idx, indent=2) + "\n")
+            git("add", "-A", cwd=work)
+            git("commit", "-q", "-m", f"{verb} pack {pid} (researched {meta['researched']})", cwd=work)
+            git("push", "-q", "-u", "origin", branch, cwd=work)
+
+        def not_opened(reason):
+            print(f"PR not opened: {pid} branch={branch} reason={reason}")
+            sys.exit(3)
+
+        if not shutil.which(GH):
+            not_opened("gh not installed")
+        existing = subprocess.run(
+            [GH, "pr", "list", "--head", branch, "--json", "url", "--jq", ".[0].url"],
+            cwd=work, capture_output=True, text=True,
+        )
+        if existing.returncode == 0 and existing.stdout.strip().startswith("http"):
+            print(existing.stdout.strip())
+            return
         body = (
             f"{verb} pack `{pid}`, tier `{meta['tier']}`, researched {meta['researched']}.\n\n"
             "Approved locally by the user during init-factory. Needs a human merge (decision-8)."
         )
         out = subprocess.run(
-            ["gh", "pr", "create", "--title", f"{verb} pack {pid}", "--body", body, "--head", branch],
+            [GH, "pr", "create", "--title", f"{verb} pack {pid}", "--body", body, "--head", branch],
             cwd=work, capture_output=True, text=True,
         )
         if out.returncode != 0:
-            fail(f"gh pr create: {out.stderr.strip()}")
+            not_opened(out.stderr.strip().replace("\n", " "))
         print(out.stdout.strip())
 
 

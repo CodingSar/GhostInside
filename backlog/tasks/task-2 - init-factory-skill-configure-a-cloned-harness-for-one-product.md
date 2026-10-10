@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 08:20'
-updated_date: '2026-10-10 08:38'
+updated_date: '2026-10-10 08:48'
 labels: []
 dependencies: []
 references:
@@ -38,6 +38,7 @@ modified_files:
   - meta/tools/check-harness.sh
   - meta/_about.md
   - PLAN.md
+  - meta/registry/runner.md
 priority: high
 type: feature
 ordinal: 2000
@@ -59,7 +60,7 @@ Pack rule format: ID, MUST/SHOULD, one line, source URL, enforce: lint|check-cmd
 - [ ] #2 First run creates a Backlog task whose acceptance criteria are the init phases; re-invocation resumes at the first unchecked criterion; each phase ends in its own commit
 - [ ] #3 Init adds the template as a `harness` git remote and never creates repositories itself
 - [ ] #4 Brief phase reads `CONCEPT.md`, interviews the user on gaps against a fixed checklist (users, core jobs, scale, data sensitivity and compliance, deploy target, integrations, non-goals, language preference) and stores a Backlog doc `product-brief`, ratified at the brief gate
-- [ ] #5 Facet phase derives facets under lang/, framework/, datastore/, domain/, concern/ from the brief, ratified at the facets gate
+- [ ] #5 Facet phase derives domain/ and concern/ facets from the brief, ratified at the facets gate; stack phase adds lang/, framework/, datastore/ facets from the ratified stack, ratified at the stack gate
 - [ ] #6 Stack phase fills `meta/registry/runner.md` with no TBD left; each choice is a Backlog decision listing rationale and rejected alternatives; decision-1 and decision-2 are replaced only by a ratified superseding decision (a CLI concept with no stored data gets no PostgreSQL)
 - [ ] #7 Practices phase pulls matching packs from the central repo, runs a delta check on packs older than 7 days, researches missing facets per the tiered rule, writes packs in the rule format, vendors them into `meta/practices/` with `practices.lock` (pack ids and commit SHA), and compiles lint and check-cmd rules into tool config
 - [ ] #8 Newly researched packs are used locally after user approval and opened as a PR on the central repo; an unreachable central repo does not stop init, it is reported
@@ -96,4 +97,8 @@ steps 5-6: searcher topic practices:review (search.md, searcher agent, orchestra
 steps 1-3, 7-8: SKILL.md (preflight template guard + shared history, init/resume/amend via label init-factory, 8 phase ACs, gate format, decisions + init-decisions doc, stop rules) and phases/{brief,facets,stack,practices,provision,seed,skeleton}.md. Facets phase covers domain/concern only; stack phase adds lang/framework/datastore facets, since they follow from the stack choice. Seed uses task create --draft (draft create lacks --ac/-m).
 step 9: check-harness scans .claude/skills refs, runs practices.py verify when lock exists, runs test_practices.py, fails on TBD once runner.md Status is no longer TBD (marker is the Status line, not the init task state, so the check needs no Backlog parsing). Negative cases verified: TBD with set status, edited review.md, broken skill path each FAIL.
 step 10: meta/_about.md, PLAN parts row.
+
+AC5 reworded: lang/framework/datastore facets follow from the stack choice, so they are ratified at the stack gate, not the facets gate. Order of criteria unchanged.
+
+Independent review (reviewer subagent): 2 high, 14 medium, 18 low; all addressed. Highs: unreachable central now a non-stop path in facets/practices; stack phase now scaffolds manifest, lockfile, linter and test config and runs install before practices compiles lint rules. Registry gains rows: framework, install command, source root, datastore, connection variable, migration command. propose is resume-safe (content-hashed branch, reuses pushed branch and open PR) and exits 3 with the branch name when gh is missing or fails; GHOSTINSIDE_GH makes gh injectable for tests; 8 tests green. SKILL: task-creation guide, preflight commit, check-harness before meta/.claude commits, resume rows for several unfinished or Done-without-brief, URL normalization, no repo creation, decision granularity, real newlines. Seed source tags [brief: f] / [pack: id rule]. Skeleton: CI run located by commit sha; without gh criterion 8 stays unchecked.
 <!-- SECTION:NOTES:END -->

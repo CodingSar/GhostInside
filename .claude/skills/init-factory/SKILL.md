@@ -10,57 +10,76 @@ the Haiku workers in `.claude/agents/`; they need a configured harness, which
 is what this skill builds. Research subagents and the deep-research skill are
 allowed where a phase file says so.
 
-Design: Backlog `decision-4` to `decision-8`. Plan of record for this skill:
-`TASK-2` in the template.
+Design: Backlog `decision-4` to `decision-8`. This skill was specified by the
+template's `TASK-2`; in a clone, that task is history, not your task. Your
+task is the init task from step 1.
 
 ## Ground rules
 
 - Propose, the user ratifies (`decision-5`). Nothing a gate covers is written
-  before the gate passes.
-- Use the Backlog CLI for every Backlog change. Read `backlog instructions
-  task-execution` before step 1 and `task-finalization` before closing.
-- Commit and push after each phase. Message: `init-factory: <phase>`, with
-  the init task id. Never force-push.
+  before the gate passes. One exception: the skeleton phase pushes before its
+  gate, because the gate shows the CI result.
+- Backlog CLI for every Backlog change. Read `backlog instructions
+  task-creation` before creating the init task and before the seed phase,
+  `task-execution` before step 1, `task-finalization` before closing.
+- Commit and push after each phase, preflight included. Message:
+  `init-factory: <phase> (<init task id>)`. If the commit touches `meta/` or
+  `.claude/`, run `meta/tools/check-harness.sh` first; a failure holds the
+  commit until fixed. Never force-push.
+- Never create repositories: no `gh repo create`, no `git init`. The user
+  makes the clone and the product remote.
 - Allowed to change: `meta/registry/`, `meta/practices/` (through
   `meta/tools/practices.py` only), `meta/architecture/` (only by a superseding
   decision), `meta/guides/stack/`, `.claude/settings.json` (allow entries
-  only), `.claude/agents/` (new workers only, Haiku), product files at the
-  repo root, `src/`, CI and container files.
+  only), `.claude/agents/` (new workers only, Haiku), `CONCEPT.md`, product
+  files at the repo root, `src/`, `scripts/`, CI and container files.
 - Never change: core guides in `meta/guides/` (outside `stack/`),
   `meta/tools/`, `meta/docs/`, `AGENTS.md`, deny entries in
   `.claude/settings.json`. These belong to the template (`decision-7`).
 - Scratch work that must survive a restart goes in `.cache/init/`
   (gitignored).
+- Multi-line text for `backlog doc update --content` or `--append-notes` must
+  contain real newlines (for example a `$'...'` string), not `\n`. Check docs
+  with `backlog doc view <id>` after writing.
 
 ## 0. Preflight (every invocation)
 
 1. Run `backlog instructions overview` once per conversation.
-2. Template guard. Template remote: `git@github.com:CodingSar/GhostInside.git`
-   (also `https://github.com/CodingSar/GhostInside` with or without `.git`).
+2. Template guard. Normalize a remote URL by dropping the scheme
+   (`ssh://`, `https://`, `git@`), turning the `:` after the host into `/`,
+   dropping a trailing `/` and `.git`, and lowercasing. The template
+   normalizes to `github.com/codingsar/ghostinside`.
    - If `origin` is the template: ask the user whether this is a product
-     clone. If yes, ask for the product remote URL, then run
-     `git remote rename origin harness` and `git remote add origin <url>`.
-     If no, stop: init never runs on the template.
-   - If there is no `harness` remote, add it with the template URL.
+     clone. If yes, ask for the product remote URL (the user creates that
+     repo), then run `git remote rename origin harness` and
+     `git remote add origin <url>`. If no, stop: init never runs on the
+     template.
+   - If there is no `harness` remote, add it:
+     `git remote add harness git@github.com:CodingSar/GhostInside.git`.
 3. Shared history: `git fetch -q harness`, then `git merge-base HEAD
    harness/main`. If it fails, stop and explain: the clone must come from
    `git clone` of the template, not the GitHub template button, so harness
    upgrades can merge later.
-4. Working tree clean and on `main`. Otherwise stop and report.
+4. On `main`. Working tree: on a first run it must be clean; on resume,
+   uncommitted changes are left from an interrupted phase. Show
+   `git status --short` and ask the user to keep (commit them under the
+   current phase) or discard them. Never discard on your own.
 5. `CONCEPT.md` at the repo root. If missing on a first run, ask the user to
    paste the concept and write it verbatim to `CONCEPT.md`.
-6. `gh auth status`. If not logged in, say that pack PRs will be skipped and
-   reported; continue.
+6. `gh auth status`. If not logged in, say that pack PRs and the CI check
+   will be skipped and reported, and that criterion 8 then stays unchecked.
 
 ## 1. Find or create the init task
 
-`backlog task list --labels init-factory --plain`
+`backlog task list --labels init-factory --json`, then sort `tasks` by status.
 
 | Found | Mode | Action |
 |---|---|---|
 | none | init | Create the task below. |
-| one not Done | resume | Read it with `--plain`. Continue at the first unchecked criterion. Its notes hold the state of earlier phases. |
+| exactly one not Done | resume | Read it with `backlog task view <id> --plain`. Continue at the first unchecked criterion. Its notes hold the state of earlier phases. |
+| more than one not Done | stop | Show them. Ask the user which one to continue and whether to archive the others. |
 | all Done, `product-brief` doc exists | amend | Ask the user what changed (or read the new `CONCEPT.md`). Create the task below titled `Amend factory: <one-line delta>`, labels `init-factory,amend`. Every phase runs its Amend section. |
+| all Done, no `product-brief` doc | stop | The earlier run is inconsistent. Report it and ask the user how to proceed. |
 
 Create: title `Initialize factory for <product name or repo name>`, label
 `init-factory`, description `Run of the init-factory skill.`, and exactly
@@ -76,7 +95,8 @@ these criteria, in order:
 8. `Walking skeleton green: lint, full tests, check-harness, CI`
 
 Then `backlog task edit <id> -s "In Progress" -a @claude`. Check criterion 1
-with the preflight output as evidence.
+with the preflight output as evidence. Commit `CONCEPT.md`, the remote
+change, and the task as `init-factory: preflight (<id>)`, and push.
 
 ## 2. Run the phases
 
@@ -92,9 +112,13 @@ For each unchecked criterion, in order:
 | 7 | `.claude/skills/init-factory/phases/seed.md` |
 | 8 | `.claude/skills/init-factory/phases/skeleton.md` |
 
-Read the phase file. Do its steps. Hold its gate. Write its outputs. Check
-the criterion with the evidence the phase file names. Append a note:
-`phase <n>: <outputs>; evidence: <evidence>`. Commit and push.
+Read the phase file. Do its steps. Hold its gate. Write its outputs. Then:
+
+1. `backlog task edit <id> --check-ac <criterion number>`, only with the
+   evidence the phase file names.
+2. `backlog task edit <id> --append-notes "criterion <n>: <outputs>; evidence: <evidence>"`,
+   where `<n>` is the criterion number.
+3. Commit and push.
 
 ## Gate
 
@@ -103,23 +127,30 @@ One gate per phase. Show one table:
 | # | Item | Proposal | Why | Rejected alternatives |
 |---|---|---|---|---|
 
-The user accepts all, or edits rows by number. Show only the changed rows
-again. The gate passes on explicit acceptance. Record the ratified table,
-compressed, in the task notes.
+Phase files say what goes in each column. Where a row had no alternative,
+write `-`. The user accepts all, or edits rows by number. Show only the
+changed rows again. The gate passes on explicit acceptance. Record the
+ratified table, compressed, in the task notes.
 
 ## Decisions
 
-Every ratified choice that is more than a plain registry value becomes a
-Backlog decision. The decision CLI stores only a title, so:
+Which gate rows become decisions: every row of the stack gate, and any row
+of another gate that chooses between real alternatives. A row that keeps a
+default already has its decision (`decision-1`, `decision-2`); it gets only
+an `init-decisions` row citing that decision.
+
+The decision CLI stores only a title and a status. It has no edit command,
+so an old decision's status cannot change; the new title is the link.
 
 1. `backlog decision create "<choice, one line>" -s accepted --plain`.
    A choice that replaces an earlier decision starts its title with
    `Supersedes decision-<n>:`.
-2. Add a row to the Backlog doc `init-decisions` (create it on first use
-   with `backlog doc create "init-decisions" -t specification`). Read the
+2. Rationale and rejected alternatives live in the Backlog doc
+   `init-decisions` (create it on first use with
+   `backlog doc create "init-decisions" -t specification --plain`). Read the
    doc, append the row, write the whole content back with
    `backlog doc update <doc id> --content`. Row:
-   `| decision-<n> | <choice> | <rationale> | <rejected alternatives> | phase <n> |`
+   `| decision-<n> | <choice> | <rationale> | <rejected alternatives> | criterion <n> |`
 3. Every harness file that cites a superseded decision now cites the new one.
 
 ## Stop rules
@@ -130,14 +161,21 @@ Stop and report instead of looping when:
 - the user says stop at a gate;
 - a researched pack still fails `practices.py check` after one repair;
 - the skeleton is still red after three fix rounds;
+- a tool the phase needs is missing (for example Docker for a server
+  datastore) and the user does not install it;
 - a change would touch something under "Never change";
 - a deny entry would need to change (needs the user's explicit confirmation,
   `meta/docs/harness-review.md` rule 5).
+
+Not a stop: the central practices repo is unreachable, or `gh` is missing.
+Record it in the notes, continue as the practices and skeleton phases say,
+and report it at the end.
 
 ## Finish
 
 After criterion 8: follow `backlog instructions task-finalization`. Final
 summary: the product brief doc id, decisions created, packs vendored and PRs
-opened, files provisioned, drafts seeded, skeleton evidence. Set Done. Tell
-the user the next step: promote a draft and run the orchestrator
+opened (or not opened), files provisioned, drafts seeded, skeleton evidence.
+Set Done. Tell the user the next step: promote a draft
+(`backlog draft promote <id>`) and run the orchestrator
 (`meta/guides/orchestrate.md`).

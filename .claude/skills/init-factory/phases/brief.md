@@ -28,7 +28,8 @@ concept, to a user answer, or is marked `ASSUMED:`.
    `AskUserQuestion`. Put your recommended option first. Do not ask what the
    concept already answers.
 4. A gap the user leaves open becomes `ASSUMED: <your best value>`.
-5. Gate: one row per field, Proposal = the value, Why = the source.
+5. Gate: one row per field. Proposal = the value, Why = the source,
+   Rejected alternatives = `-` (or the other reading, for a conflict).
 
 ## Output
 
@@ -52,5 +53,7 @@ Evidence for the criterion: the doc id, and no field empty.
 
 Read the new `CONCEPT.md` or the user's description of the change. Compare
 field by field with `product-brief`. Ask only about fields that changed or
-are new. Update the doc. In the task notes, list the changed fields; later
-phases use that list to decide what to revisit.
+are new. Gate: one row per changed field, Proposal = new value, Rejected
+alternatives = the old value. After acceptance, update the doc. In the task
+notes, list the changed fields; later phases use that list to decide what to
+revisit.

@@ -55,7 +55,7 @@ class PracticesTest(unittest.TestCase):
         bin_dir = t / "bin"
         bin_dir.mkdir()
         fake_gh = bin_dir / "gh"
-        fake_gh.write_text("#!/bin/sh\necho https://example.test/pr/1\n")
+        fake_gh.write_text("#!/bin/sh\n[ \"$2\" = list ] && exit 0\necho https://example.test/pr/1\n")
         fake_gh.chmod(0o755)
         self.practices = t / "practices"
         self.practices.mkdir()
@@ -66,7 +66,7 @@ class PracticesTest(unittest.TestCase):
             GHOSTINSIDE_PRACTICES_DIR=str(self.practices),
             GIT_AUTHOR_NAME="t", GIT_AUTHOR_EMAIL="t@t",
             GIT_COMMITTER_NAME="t", GIT_COMMITTER_EMAIL="t@t",
-            PATH=f"{bin_dir}{os.pathsep}{os.environ['PATH']}",
+            GHOSTINSIDE_GH=str(fake_gh),
         )
         self.t = t
 
@@ -153,11 +153,26 @@ class PracticesTest(unittest.TestCase):
         r = self.run_cli("propose", pack)
         self.assertEqual(r.returncode, 0, r.stderr)
         self.assertIn("https://example.test/pr/1", r.stdout)
-        branch = "pack/domain-payments-2026-10-01"
-        show = subprocess.run(["git", "show", f"{branch}:index.json"], cwd=self.bare,
+        heads = subprocess.run(["git", "for-each-ref", "--format=%(refname:short)", "refs/heads/pack"],
+                               cwd=self.bare, capture_output=True, text=True, check=True).stdout.split()
+        self.assertEqual(len(heads), 1)
+        self.assertTrue(heads[0].startswith("pack/domain-payments-2026-10-01-"))
+        show = subprocess.run(["git", "show", f"{heads[0]}:index.json"], cwd=self.bare,
                               capture_output=True, text=True, check=True).stdout
         ids = [p["id"] for p in json.loads(show)["packs"]]
         self.assertEqual(ids, ["domain/payments", "lang/python"])
+
+        rerun = self.run_cli("propose", pack)
+        self.assertEqual(rerun.returncode, 0, rerun.stderr)
+        self.assertIn("branch already pushed", rerun.stdout)
+
+    def test_propose_without_gh_reports_branch(self):
+        pack = self.write("p/domain/payments.md", GOOD.replace("lang/python", "domain/payments")
+                          .replace("tier: standard", "tier: deep").replace("PY-", "PAY-"))
+        self.env["GHOSTINSIDE_GH"] = str(self.t / "no-such-gh")
+        r = self.run_cli("propose", pack)
+        self.assertEqual(r.returncode, 3, r.stderr)
+        self.assertIn("PR not opened: domain/payments branch=pack/domain-payments-", r.stdout)
 
 
 if __name__ == "__main__":

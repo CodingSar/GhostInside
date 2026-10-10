@@ -6,7 +6,13 @@ user ratifies it (`decision-5`). Nothing here is decided in advance.
 | Key | Value |
 |---|---|
 | language | TBD |
+| framework | TBD (or none) |
 | package manager | TBD |
+| install command | TBD |
+| source root and file extensions | TBD |
+| datastore | TBD (default PostgreSQL, `decision-2`) |
+| connection variable | TBD (default `DATABASE_URL`) |
+| migration command | TBD (or none) |
 | test command (full) | TBD |
 | test command (targeted, takes a path) | TBD |
 | lint command | TBD |
