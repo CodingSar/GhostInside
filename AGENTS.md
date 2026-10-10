@@ -19,7 +19,7 @@
 
 - Harness files (`.claude/`, `meta/`, `AGENTS.md`, `CLAUDE.md`) change live on `main`, without a review gate. Restore an earlier version of a file from its commit to roll back.
 - `meta/core/` belongs to the template. In a product clone it is never edited; harness changes are made in the template and merged from the `harness` remote.
-- A change to a worker's limits (its tools, model, or allowlist rules) names the Backlog task that motivated it in the commit message.
+- A change to a worker's limits (its tools, model, or allowlist rules) states why in the commit message: the Backlog task that motivated it, or the user request when there is none.
 - Hard denies in `.claude/settings.json` and the guard hook stay in place whatever the allowlists say. Changing either needs the user's explicit confirmation.
 
 <!-- BACKLOG.MD GUIDELINES START -->
