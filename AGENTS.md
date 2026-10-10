@@ -4,13 +4,13 @@
 
 - Default branch `main`, remote `origin`.
 - Harness changes commit directly to `main`, in small commits, one per coherent change. Commits are the rollback path to earlier, better harness versions.
-- Harness changes: push after each commit. Product tasks: commit per step, push once the task's full suite and check pass (`meta/core/guides/orchestrate.md`). The orchestrator (main thread) may push. Subagents never commit or push.
+- Harness changes: push after each commit. Product tasks: commit per step, push once the task's full suite and check pass (`meta/core/guides/orchestrate.md`). `loop.py`, run by the main thread, commits and pushes product tasks; the main thread pushes harness changes. Subagents never commit or push.
 - Never force-push. Never rewrite published history.
 
 ## Harness
 
 - Read `meta/core/design.md` for the design and `meta/_about.md` for the catalog.
-- The main thread runs the orchestrator procedure in `meta/core/guides/orchestrate.md`. Workers are Haiku subagents in `.claude/agents/`, launched from the main thread. No headless launch.
+- The main thread runs the orchestrator procedure in `meta/core/guides/orchestrate.md`: it dispatches what `meta/core/tools/loop.py` prints. Everything runs on Haiku, the main thread included, except the `researcher` agent. Workers are subagents in `.claude/agents/`, launched from the main thread. No headless launch.
 - Backlog tasks are the plan of record. Acceptance criteria are the cases. Plans live in the task `plan` field, not in files.
 - Two Backlog projects. Root `backlog/` is the product backlog; the template ships it empty. `meta/core/backlog/` is the harness backlog: prefix every `backlog` command for harness work with `BACKLOG_CWD=meta/core`. In a product clone the harness backlog is read-only history.
 - Run `meta/core/tools/check-harness.sh` before committing harness changes. A failing check holds the commit.

@@ -22,6 +22,7 @@ architecture:
 | connection variable | `DATABASE_URL` |
 | migration command | a mainstream migration tool for the stack; `none` without a datastore |
 | test runner, full and targeted test commands | the language's mainstream runner |
+| test report (JUnit XML) | the runner's JUnit XML option, written by both test commands to a path ignored by git (for example `reports/junit.xml`); `loop.py` reads it (`HD-16`) |
 | linter and formatter | the language's mainstream ones |
 | import boundary checker | a tool that enforces the architecture's import rules 1 to 4 (for example import-linter, dependency-cruiser, depguard, eslint boundaries) |
 | duplication checker | jscpd, or a stack-native one; configured to ignore test files |

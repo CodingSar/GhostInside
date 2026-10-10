@@ -27,19 +27,22 @@ proposes the stack and practices and the user ratifies them (`HD-5`).
 | Part | Where | Role |
 |---|---|---|
 | Backlog | root `backlog/` | Product plan of record. Acceptance criteria are the cases. |
-| Orchestrator | main thread, `meta/core/guides/orchestrate.md` | Owns one task from intake to Done. Launches workers, runs tests and checks, commits and pushes. |
-| Workers | `.claude/agents/`, Haiku | `test-writer`, `implementer`. Each reads one guide first. |
+| Orchestrator | main thread (any model, Haiku included), `meta/core/guides/orchestrate.md` | Dispatcher: carries out the one line `loop.py` prints (LAUNCH, ASK, DONE, STOP) and reports each agent's `RETURN` line back (`HD-16`). |
+| Loop | `meta/core/tools/loop.py`, state in `.scratch/<run>/` | The task state machine. Runs every deterministic step, commits, pushes; keeps agent calls and questions as a frame stack on disk. |
+| Workers | `.claude/agents/`, Haiku | `intake`, `planner`, `test-writer`, `implementer`; `researcher` on a bigger model. Each reads one guide and one frame, and ends with one `RETURN` line. |
 | Guides | `meta/core/guides/`, overlays in `meta/product/overlays/` | Procedures, plus stack specifics per guide. |
 | Defaults | `meta/core/defaults/` | Modules of slices; PostgreSQL only. Overridden only by a product file and a ratified decision (`HD-6`, `HD-9`). |
 | Stack | `meta/product/stack.md` | Every command the factory runs. TBD in the template. |
 | Practices | `meta/product/practices/` | Facet packs from the central repo, vendored and locked (`HD-8`). |
-| Tools | `meta/core/tools/` | `packet.py` (research packet), `structure.py` (product layout and size), `practices.py` (packs), `guard.py` (Bash hook), `check-harness.sh`. |
+| Tools | `meta/core/tools/` | `loop.py` (dispatcher loop and hooks), `packet.py` (research packet), `structure.py` (product layout and size), `practices.py` (packs), `guard.py` (Bash hook), `check-harness.sh`. |
 | init-factory | `.claude/skills/init-factory/` | Configures a clone: brief, screens (GUI only), facets, stack, packs, provision, seed, walking skeleton. Six gates, five without a GUI (`HD-15`). |
 | Screens | `meta/product/screens/`, Backlog doc `product-screens` | Static HTML mockups of a GUI product's screens. Requirements, not code. |
 
 ## Flow of one task
 
-1. Intake: the orchestrator creates a Backlog task. Each criterion traces to
+Every stage below is run by `loop.py`; the main thread only dispatches.
+
+1. Intake: the intake agent creates or checks the Backlog task. Each criterion traces to
    the user's words or a source tag, or is marked `ASSUMED:` until
    confirmed. A task that adds or changes a screen first updates its mockup
    and gets the user's confirmation.
@@ -67,8 +70,9 @@ checker enforce them on every task.
 
 ## Where probability is used, and where it is not
 
-- Deterministic: the packet, file allowlists, status values, the red check,
-  the `RESULT:` lines, the check command, the harness checks, the guard
+- Deterministic: the task state machine in `loop.py`, the packet, file
+  allowlists, status values, the red gate from the JUnit report, the
+  `RETURN` lines, the frame stack, the check command, the harness checks, the guard
   hook, the stop rules.
 - Probabilistic: the code inside a stub, helper names, how a test is
   phrased, the retries that give the model another sample.

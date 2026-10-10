@@ -1,8 +1,9 @@
 # GhostInside
 
-A software factory harness that small models can run. Claude Code's main
-thread orchestrates; Haiku subagents write tests and code inside tight file
-allowlists; deterministic tools check everything that can be checked.
+A software factory harness that small models can run. A deterministic
+loop runs each task; the main thread only dispatches; Haiku subagents write
+criteria, plans, tests, and code inside tight file allowlists; deterministic
+tools check everything that can be checked.
 
 GhostInside is a template. Each product is a clone of it.
 

@@ -21,7 +21,7 @@ stack's entry file stems and name case.
 - `modules/health/migrations/`: one migration creating `health_ping`.
 - `modules/health/slices/check/handler`: `check()` returns status `ok` when
   the datastore answers.
-- `modules/health/slices/check/` test file: `<init task id>#8 health check
+- `modules/health/slices/check/` test file: `<init task id>#9 health check
   reports ok with a live datastore`, through the handler, against the real
   datastore, as `meta/core/guides/test.md` and the `test.md` overlay say.
 - `shared/`: the datastore connection, read from the connection variable.
@@ -41,7 +41,8 @@ datastore, and why.
    - the migration command (skip without a datastore);
    - the check command (it includes `structure.py` and the boundary checker);
    - the targeted test command on the slice's path;
-   - the full test command;
+   - the full test command, then confirm the JUnit report at the stack's
+     report path lists the health test as passed;
    - `meta/core/tools/check-harness.sh`.
 3. Fix and rerun. Three rounds at most; still red: stop and report.
 4. Commit and `git push origin main`. Find the CI run for that commit:
