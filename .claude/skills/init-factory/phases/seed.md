@@ -22,9 +22,9 @@ Every criterion ends with exactly one source tag:
 
 1. Milestones: 2 to 5, from the brief's core jobs, in delivery order.
 2. Modules: one per area of the domain the core jobs work in, as the
-   architecture defines (`HD-11`). Name each in kebab-case.
+   architecture defines (`HD-11`). Name each in the stack's name case.
 3. Slices: one per use case (one command or one query) of a core job. Name
-   each in kebab-case. One draft per slice:
+   each in the stack's name case. One draft per slice:
    - title `<module>/<slice>: <use case>`;
    - description: why, quoting `product-brief`;
    - criteria in `GIVEN <state> WHEN <action> THEN <outcome>` form, each

@@ -9,7 +9,8 @@ the orchestrator. No gate: every piece of evidence is a command result.
 
 Follow the architecture (`meta/product/architecture.md` if it exists, else
 `meta/core/defaults/architecture.md`) and the source root, extensions, and
-commands in `meta/product/stack.md`. Names below are file stems.
+commands in `meta/product/stack.md`. Names below are file stems; use the
+stack's entry file stems and name case.
 
 - `<source root>/_about.md`: one row, `health`, with its purpose.
 - `modules/health/_about.md`: purpose, public API `check`, table

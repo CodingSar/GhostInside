@@ -7,8 +7,8 @@ belong to the stack's boundary checker, not to this script.
 
 Usage:
   structure.py --ext .py --test '^test_.*\\.py$' [--root src] [--index index]
-               [--handler handler] [--max-lines 200] [--max-test-lines 300]
-               [--max-slices 12]
+               [--handler handler] [--case kebab|snake|camel|pascal]
+               [--max-lines 200] [--max-test-lines 300] [--max-slices 12]
 
 Exit 0 when clean, 1 with one FAIL line per finding otherwise.
 Python standard library only. This is harness tooling, not the product stack.
@@ -27,6 +27,12 @@ FORBIDDEN = {
 }
 IGNORED_DIRS = {"node_modules", "dist", "build", "target", "venv"}
 CATALOG = "_about.md"
+CASES = {
+    "kebab": r"^[a-z][a-z0-9]*(-[a-z0-9]+)*$",
+    "snake": r"^[a-z][a-z0-9]*(_[a-z0-9]+)*$",
+    "camel": r"^[a-z][a-zA-Z0-9]*$",
+    "pascal": r"^[A-Z][a-zA-Z0-9]*$",
+}
 
 
 def ignored(path):
@@ -39,10 +45,8 @@ def subdirs(path):
 
 
 def named_in(catalog, name):
-    """True when the catalog text mentions the name as a whole word."""
-    if not catalog.exists():
-        return False
-    return re.search(rf"(?<![\w-]){re.escape(name)}(?![\w-])", catalog.read_text()) is not None
+    """True when the catalog names it in backticks, as architecture.md asks."""
+    return catalog.exists() and f"`{name}`" in catalog.read_text()
 
 
 def has_stem(folder, stem, exts):
@@ -51,7 +55,11 @@ def has_stem(folder, stem, exts):
 
 def check(args):
     root = Path(args.root)
-    exts = {e if e.startswith(".") else f".{e}" for e in args.ext.split(",")}
+    parts = [e.strip() for e in args.ext.split(",") if e.strip()]
+    exts = {e if e.startswith(".") else f".{e}" for e in parts}
+    if not exts:
+        return ["--ext: no extensions given"]
+    case = re.compile(CASES[args.case]) if args.case else None
     test_re = re.compile(args.test)
     fails = []
 
@@ -69,6 +77,8 @@ def check(args):
 
     modules = root / "modules"
     for mod in subdirs(modules) if modules.is_dir() else []:
+        if case and not case.match(mod.name):
+            bad(mod, f"module name is not {args.case} case")
         if not named_in(root / CATALOG, mod.name):
             bad(mod, f"module not named in {root / CATALOG}")
         if not (mod / CATALOG).exists():
@@ -82,6 +92,8 @@ def check(args):
         if len(slices) > args.max_slices:
             bad(mod, f"{len(slices)} slices, cap {args.max_slices}; propose a module split")
         for sl in slices:
+            if case and not case.match(sl.name):
+                bad(sl, f"slice name is not {args.case} case")
             if not named_in(mod / CATALOG, sl.name):
                 bad(sl, f"slice not named in {mod / CATALOG}")
             if not has_stem(sl, args.handler, exts):
@@ -111,6 +123,7 @@ def main(argv=None):
     ap.add_argument("--test", required=True, help="regex on the file name that marks a test file")
     ap.add_argument("--index", default="index")
     ap.add_argument("--handler", default="handler")
+    ap.add_argument("--case", choices=sorted(CASES), help="required case of module and slice names")
     ap.add_argument("--max-lines", type=int, default=200)
     ap.add_argument("--max-test-lines", type=int, default=300)
     ap.add_argument("--max-slices", type=int, default=12)

@@ -30,10 +30,18 @@ def fail(msg):
 
 
 def stack_value(key):
-    """Value of a row in meta/product/stack.md, without backticks."""
-    text = (ROOT / PRODUCT / "stack.md").read_text()
-    m = re.search(rf"^\| {re.escape(key)} \| (.+?) \|$", text, re.M)
-    return m.group(1).replace("`", "").strip() if m else None
+    """Value of a row in meta/product/stack.md, without backticks. Stops when unset."""
+    path = ROOT / PRODUCT / "stack.md"
+    if not path.exists():
+        fail(f"missing harness file: {PRODUCT / 'stack.md'}")
+    for line in path.read_text().splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if line.lstrip().startswith("|") and len(cells) >= 2 and cells[0] == key:
+            value = cells[1].replace("`", "").strip()
+            if not value or value.startswith("TBD"):
+                fail(f"stack not set: '{key}' is TBD in meta/product/stack.md; run init-factory")
+            return value
+    fail(f"stack row missing: '{key}' in meta/product/stack.md")
 
 
 def effective(name):
@@ -57,8 +65,12 @@ def main(argv):
         fail("usage: packet.py <module> [<slice>]")
     module, slice_ = argv[0], (argv[1] if len(argv) == 2 else None)
     src = stack_value("source root")
-    if not src or src.startswith("TBD"):
-        fail("stack not set: source root is TBD in meta/product/stack.md; run init-factory")
+    if re.search(r"\s", src):
+        fail(f"source root must be a bare path in meta/product/stack.md, got: {src}")
+    stems = [s.strip() for s in stack_value("entry file stems").split(",")]
+    if len(stems) != 2 or not all(stems):
+        fail("entry file stems must be two names, such as: index, handler")
+    index_stem, handler_stem = stems
 
     print(f"# Packet: module={module}" + (f" slice={slice_}" if slice_ else ""))
     print()
@@ -81,7 +93,7 @@ def main(argv):
             section(mod / "_about.md")
         else:
             notes.append(f"no {mod}/_about.md")
-        for f in sorted((ROOT / mod).glob("index.*")):
+        for f in sorted((ROOT / mod).glob(f"{index_stem}.*")):
             section(f.relative_to(ROOT))
         if slice_:
             sl = mod / "slices" / slice_
@@ -92,7 +104,7 @@ def main(argv):
                 for f in sorted((ROOT / sl).iterdir()):
                     print(f.relative_to(ROOT))
                 print()
-                for f in sorted((ROOT / sl).glob("handler.*")):
+                for f in sorted((ROOT / sl).glob(f"{handler_stem}.*")):
                     section(f.relative_to(ROOT))
 
     print("== notes ==")

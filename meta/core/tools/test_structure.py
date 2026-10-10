@@ -105,6 +105,34 @@ class StructureTest(unittest.TestCase):
         code, out = self.run_check(files, "--max-slices", "3")
         self.assertIn("4 slices, cap 3", out)
 
+    def test_catalog_needs_backticked_name(self):
+        files = dict(GOOD)
+        files["_about.md"] = "Our billing module bills."
+        code, out = self.run_check(files)
+        self.assertIn("modules/billing: module not named", out)
+
+    def test_ext_with_spaces(self):
+        files = {k.replace("handler.py", "handler.tsx").replace(".py", ".ts"): v for k, v in GOOD.items()}
+        files["modules/billing/slices/create-invoice/handler.tsx"] = "x\n" * 201
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp) / "src"
+            for rel, text in files.items():
+                p = root / rel
+                p.parent.mkdir(parents=True, exist_ok=True)
+                p.write_text(text)
+            out = io.StringIO()
+            with redirect_stdout(out):
+                code = structure.main(["--root", str(root), "--ext", ".ts, .tsx",
+                                       "--test", r"\.test\.ts$"])
+        self.assertIn("handler.tsx: 201 lines, cap 200", out.getvalue())
+        self.assertNotIn("no handler entry file", out.getvalue())
+
+    def test_name_case(self):
+        code, out = self.run_check(GOOD, "--case", "snake")
+        self.assertIn("create-invoice: slice name is not snake case", out)
+        code, out = self.run_check(GOOD, "--case", "kebab")
+        self.assertEqual(code, 0, out)
+
     def test_ignored_dirs(self):
         files = dict(GOOD)
         files["modules/billing/__pycache__/helpers.py"] = "x\n" * 500

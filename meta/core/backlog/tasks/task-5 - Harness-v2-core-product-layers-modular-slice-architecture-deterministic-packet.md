@@ -7,7 +7,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:24'
+updated_date: '2026-10-10 09:25'
 labels: []
 dependencies: []
 modified_files:
@@ -143,4 +143,6 @@ step 6: guard.py PreToolUse hook (force push in all spellings incl. +refspec, --
 step 7: README rewritten as human entry (start a product, layout, harness work); meta/core/design.md rewritten without status/next (layers table, parts, flow with tidy, product code, evaluation); meta/_about.md lists all tools. TASK-5 ACs reworded to what was built (packet.py, design.md). Notes added to TASK-2 and TASK-4 mapping old paths.
 
 review fixes A (findings 1,2,18): .gitkeep in every backlog folder (root and meta/core) - verified decision and draft creation in a fresh clone; preflight runs git push -u origin main after the remote rename and every push names origin main; first-run clean tree allows an untracked CONCEPT.md.
+
+review fixes B (findings 3,17): guard.py checks newline-separated commands, shell keywords and braces, wrappers with value options (timeout, nice, env -u, xargs -n), bash flag groups containing c, backticks and $(...), find -exec/-execdir, unique long-option abbreviations for push and rm; unbalanced quotes fall back to word split. 22 new blocked and 6 new allowed cases; tests green. Heredocs whose lines look like blocked commands are blocked (conservative).
 <!-- SECTION:NOTES:END -->

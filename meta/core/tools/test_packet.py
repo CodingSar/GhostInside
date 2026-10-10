@@ -19,8 +19,8 @@ HARNESS = {
     "meta/core/defaults/persistence.md": "# default persistence\n",
     "meta/product/practices/review.md": "# Review rules\n",
 }
-STACK_SET = "| source root | `src` |\n"
-STACK_TBD = "| source root | TBD (default `src`) |\n"
+STACK_SET = "| source root | `src` |\n| entry file stems | `index, handler` |\n"
+STACK_TBD = "| source root | TBD (default `src`) |\n| entry file stems | TBD |\n"
 
 
 class PacketTest(unittest.TestCase):
@@ -72,6 +72,28 @@ class PacketTest(unittest.TestCase):
                  "src/_about.md": "x\n", "src/modules/billing/_about.md": "x\n"}
         code, out, _ = self.run_packet(files, "billing", "refund")
         self.assertIn("new slice: src/modules/billing/slices/refund does not exist", out)
+
+    def test_aligned_table_and_stems(self):
+        stack = "|  source root     |  `app/src`  |\n| entry file stems | Index, Handler |\n"
+        files = {**HARNESS, "meta/product/stack.md": stack,
+                 "app/src/_about.md": "x\n", "app/src/modules/billing/_about.md": "x\n",
+                 "app/src/modules/billing/Index.java": "class Index {}\n"}
+        code, out, err = self.run_packet(files, "billing")
+        self.assertEqual(code, 0, err)
+        self.assertIn("app/src/modules/billing/Index.java:1: class Index {}", out)
+
+    def test_annotated_value_stops(self):
+        stack = "| source root | src (Python src layout) |\n| entry file stems | index, handler |\n"
+        code, _, err = self.run_packet({**HARNESS, "meta/product/stack.md": stack}, "billing")
+        self.assertEqual(code, 1)
+        self.assertIn("bare path", err)
+
+    def test_missing_row_and_file(self):
+        code, _, err = self.run_packet({**HARNESS, "meta/product/stack.md": "| x | y |\n"}, "billing")
+        self.assertIn("stack row missing: 'source root'", err)
+        code, _, err = self.run_packet(HARNESS, "billing")
+        self.assertEqual(code, 1)
+        self.assertIn("missing harness file: meta/product/stack.md", err)
 
     def test_missing_harness_file_stops(self):
         files = {"meta/product/stack.md": STACK_SET}

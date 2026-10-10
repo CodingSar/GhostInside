@@ -2,7 +2,9 @@
 
 Decision: `HD-1`, amended by `HD-11`. Default for every product. A product
 overrides it only with `meta/product/architecture.md`, written for a ratified
-superseding decision (`HD-6`, `HD-9`).
+superseding decision (`HD-6`, `HD-9`). An override keeps the skeleton the
+tools rely on: `modules/<module>/slices/<slice>/`, the entry file stems, and
+the catalogs.
 
 ## Units
 
@@ -38,7 +40,9 @@ src/
           test           the slice's tests, named per the test.md overlay
 ```
 
-Module and slice names are kebab-case, or the case the language requires.
+Module and slice names use the name case in `meta/product/stack.md`
+(kebab by default, snake where the language imports folders by name). Entry
+file stems (`index`, `handler`) follow the stack's entry file stems row.
 
 ## Import rules
 
@@ -88,9 +92,10 @@ forbidden names, and these caps.
 
 ## Catalogs
 
-`src/_about.md` names every module. Each module's `_about.md` names every
-slice. `structure.py` fails when a name is missing. The orchestrator keeps
-both current at close-out.
+`src/_about.md` names every module, in backticks. Each module's `_about.md`
+names every slice, in backticks. `structure.py` fails when a name is missing.
+The orchestrator adds the lines when a task creates a module or slice, right
+after the test-first step.
 
 ## Why
 
