@@ -15,8 +15,8 @@ Read `meta/guides/test.md` in full. It is your how-to. Follow it.
 ## Input
 
 Your prompt contains everything you need: the task id, the acceptance
-criteria with their numbers, the slice path, the testing packet, and the test
-command. Do not search the repo or Backlog beyond the guide and the slice
+criteria with their numbers, the slice path, the testing packet, the review
+rules, and the test command. Do not search the repo or Backlog beyond the guide and the slice
 folder named in the prompt.
 
 ## Hard limits

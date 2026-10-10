@@ -20,6 +20,8 @@ names them. Do not edit Backlog markdown files.
    the user the stack is not set and init-factory must run first. Do not
    invent a runner.
 3. Read `meta/_about.md` to know what the catalog holds.
+4. If the file `orchestrate.md` exists in `meta/guides/stack/`, read it. It
+   adds stack specifics to this guide. It never removes a stop rule.
 
 ## 1. Intake: create the task
 
@@ -46,7 +48,7 @@ Follow `backlog instructions task-creation`.
 ## 3. Research and plan
 
 1. Launch `searcher` (Agent tool). Prompt it with: the topics
-   `architecture`, `registry`, `practices:testing`, `slice:<name>`, and the
+   `architecture`, `registry`, `practices:testing`, `practices:review`, `slice:<name>`, and the
    slice path. Read only its final `RESULT` line and the packet's gap list.
    Any gap stops the run: report it to the user.
 2. Write the plan: `backlog task edit TASK-n --plan "..."`. Numbered steps.
@@ -59,7 +61,8 @@ Follow `backlog instructions task-creation`.
 ## 4. Test first
 
 1. Launch `test-writer` with: the task id, the criteria verbatim with their
-   numbers, the slice path, the testing packet text, and the test command.
+   numbers, the slice path, the testing packet text, the review rules from
+   the `practices:review` packet, and the test command.
 2. Run the test command yourself. Gate: every new test fails with an
    assertion or a not-implemented error. An import error, a collection error,
    or any passing new test is a failure.
@@ -71,8 +74,9 @@ Follow `backlog instructions task-creation`.
 For each step, in order:
 
 1. Launch `implementer` with: the step text, the criteria it covers, the
-   exact file allowlist, the targeted test command, and the budget (two
-   iterations inside the worker).
+   exact file allowlist, the targeted test command, the review rules from
+   the `practices:review` packet, and the budget (two iterations inside the
+   worker).
 2. Read its `RESULT` line. `ok`: run the targeted command yourself to confirm.
    `deviation` or `blocked`: stop and report. Do not retry deviations.
 3. Record progress: `backlog task edit TASK-n --append-notes "step <n>: <result>"`.

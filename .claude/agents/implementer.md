@@ -16,7 +16,7 @@ Read `meta/guides/implement.md` in full. It is your how-to. Follow it.
 
 Your prompt contains everything you need: the step text, the acceptance
 criteria this step covers, the exact file allowlist, the targeted test
-command, and your iteration budget. Work from the prompt and the files on the
+command, the review rules, and your iteration budget. Work from the prompt and the files on the
 allowlist. Do not search beyond them.
 
 ## Final line

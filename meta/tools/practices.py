@@ -9,7 +9,7 @@ Subcommands:
   fetch                     clone or update the central repo cache, print its sha
   status <id>...            print hit|stale|miss per facet id against the cache
   check <pack.md>...        validate pack format; exit 1 on any error
-  vendor <id|pack.md>...    vendor exactly this set into meta/practices/packs/,
+  vendor [<id|pack.md>...]  vendor exactly this set (may be empty) into meta/practices/packs/,
                             write practices.lock, regenerate review.md and enforced.md
   verify                    exit 1 when vendored files do not match the lock
   propose <pack.md>         open a PR adding or replacing the pack in the central repo
@@ -367,7 +367,7 @@ def main():
     c.add_argument("files", nargs="+")
     c.set_defaults(fn=cmd_check)
     v = sub.add_parser("vendor")
-    v.add_argument("items", nargs="+")
+    v.add_argument("items", nargs="*")
     v.set_defaults(fn=cmd_vendor)
     sub.add_parser("verify").set_defaults(fn=cmd_verify)
     p = sub.add_parser("propose")

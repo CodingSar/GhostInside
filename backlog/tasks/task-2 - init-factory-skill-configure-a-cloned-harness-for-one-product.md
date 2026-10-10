@@ -5,7 +5,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 08:20'
-updated_date: '2026-10-10 08:32'
+updated_date: '2026-10-10 08:34'
 labels: []
 dependencies: []
 references:
@@ -15,6 +15,18 @@ modified_files:
   - meta/tools/practices.py
   - meta/tools/test_practices.py
   - .gitignore
+  - meta/guides/orchestrate.md
+  - meta/guides/search.md
+  - meta/guides/test.md
+  - meta/guides/implement.md
+  - .claude/agents/searcher.md
+  - .claude/agents/test-writer.md
+  - .claude/agents/implementer.md
+  - meta/guides/stack/_about.md
+  - meta/practices/_about.md
+  - meta/practices/practices.lock
+  - meta/practices/review.md
+  - meta/practices/enforced.md
 priority: high
 type: feature
 ordinal: 2000
@@ -67,4 +79,6 @@ Note: step 4 tests are committed as meta/tools/test_practices.py (temp dirs, loc
 
 <!-- SECTION:NOTES:BEGIN -->
 step 4: practices.py fetch/status/check/vendor/verify/propose; 7 unittest cases green; fetch+status against real central: 6acaf49, both facets miss (empty index).
+
+steps 5-6: searcher topic practices:review (search.md, searcher agent, orchestrator step 3), review rules passed to test-writer and implementer; overlay hook line in orchestrate/test/implement; meta/guides/stack/_about.md; practices/_about.md documents packs, lock, review.md, enforced.md. vendor accepts an empty set; template ships empty vendored state (lock at central 6acaf49), verify ok.
 <!-- SECTION:NOTES:END -->

@@ -13,6 +13,7 @@ The prompt gives topics from a closed menu:
 | `architecture` | `meta/architecture/` |
 | `registry` | `meta/registry/` |
 | `practices:testing` | `meta/practices/` (domain row first, then `generic`) |
+| `practices:review` | `meta/practices/review.md` (generated; copy every rule line) |
 | `slice:<name>` | `src/slices/<name>/` (the folder named in the prompt) |
 
 Any topic outside this table is a gap with `reason: unknown topic`.
@@ -27,6 +28,8 @@ Any topic outside this table is a gap with `reason: unknown topic`.
    That is expected for new slices, so it is not a stop by itself.
 4. Practices: for `practices:testing`, use the row whose domain matches the
    domain in `meta/registry/`, if any; otherwise the `generic` row.
+5. For `practices:review`: copy every rule line of `meta/practices/review.md`
+   as a rule. If the file is missing, record a gap with `reason: file missing`.
 
 Matching is exact. No synonyms, no guessing a closest file.
 

@@ -7,7 +7,13 @@ tests depend on.
 ## 1. Read
 
 From the prompt: the step text, the criteria it covers, the exact file
-allowlist, the targeted test command, and your iteration budget.
+allowlist, the targeted test command, the review rules, and your iteration
+budget. Follow the review rules in the code you write; a review rule that
+conflicts with a test is a deviation.
+
+If the file `implement.md` exists in `meta/guides/stack/`, read it next. It
+adds stack specifics (commands, paths, idioms) to this guide. It never relaxes
+a forbidden item.
 
 Read only the allowlisted files and the test files for the covered criteria.
 Read `meta/architecture/vertical-slice.md` once if you are unsure where a

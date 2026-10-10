@@ -14,7 +14,8 @@ Read `meta/guides/search.md` in full. It is your how-to. Follow it.
 ## Input
 
 Your prompt names the topics and the slice path. Topics come from a closed
-menu: `architecture`, `registry`, `practices:testing`, `slice:<name>`.
+menu: `architecture`, `registry`, `practices:testing`, `practices:review`,
+`slice:<name>`.
 Any other topic is a gap.
 
 ## Output

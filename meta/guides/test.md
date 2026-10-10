@@ -7,7 +7,11 @@ the spec; the implementer must make the tests pass without changing them.
 ## 1. Read
 
 From the prompt: the task id, the criteria with numbers, the slice path, the
-testing packet, and the test command.
+testing packet, the review rules, and the test command.
+
+If the file `test.md` exists in `meta/guides/stack/`, read it next. It adds
+stack specifics (commands, paths, file extensions, test idioms) to this guide.
+It never relaxes a forbidden item.
 
 Apply the testing packet first. Domain rules replace generic rules for the
 same topic. A criterion overrides any practice; if a practice conflicts with a
