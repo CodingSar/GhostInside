@@ -3,11 +3,11 @@ id: TASK-5
 title: >-
   Harness v2: core/product layers, modular slice architecture, deterministic
   packet
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:26'
+updated_date: '2026-10-10 09:29'
 labels: []
 dependencies: []
 modified_files:
@@ -99,17 +99,17 @@ Review on 2026-10-10 found that template-owned defaults and init-written product
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 Template-owned files live under meta/core/, init-factory-written files under meta/product/; a product file overrides the core default of the same name; check-harness fails in a clone when meta/core/ differs from the merge base with harness/main
-- [ ] #2 Harness development backlog lives in meta/core/backlog/ (used with BACKLOG_CWD=meta/core); root backlog/ is the product backlog and the template ships it empty
-- [ ] #3 Harness decisions have rationale in meta/core/decisions.md as HD-n, one-to-one with harness backlog decision-n
-- [ ] #4 Default product architecture is modules containing use-case slices, with app/ composition root, shared/ kernel, _about.md catalogs, import rules, forbidden folder names and size caps
-- [ ] #5 meta/core/tools/structure.py checks layout, catalogs, forbidden names and size caps deterministically, with tests; init-factory wires it, a boundary checker, duplication and dead-code checks into one check command
-- [ ] #6 Searcher worker is replaced by deterministic meta/core/tools/packet.py, with tests
-- [ ] #7 Guides support changing behaviour (plan lists tests to retire, test-writer edits only those), a tidy step after green, and test names carrying TASK-n#k
-- [ ] #8 Each rule has one home: generic testing practice merged into the test guide, dead domain-row mechanism removed, agent files only point to their guide, core guides cite the stack datastore instead of PostgreSQL
-- [ ] #9 init-factory matches the 5 grouped gates of HD-5 and records one stack decision instead of one per row
-- [ ] #10 README is a human entry, PLAN.md becomes meta/core/design.md without status lists, governance merged into AGENTS.md, template settings carry no stack or personal entries, and a PreToolUse guard blocks force-push and recursive force-remove variants
-- [ ] #11 meta/core/tools/check-harness.sh passes
+- [x] #1 Template-owned files live under meta/core/, init-factory-written files under meta/product/; a product file overrides the core default of the same name; check-harness fails in a clone when meta/core/ differs from the merge base with harness/main
+- [x] #2 Harness development backlog lives in meta/core/backlog/ (used with BACKLOG_CWD=meta/core); root backlog/ is the product backlog and the template ships it empty
+- [x] #3 Harness decisions have rationale in meta/core/decisions.md as HD-n, one-to-one with harness backlog decision-n
+- [x] #4 Default product architecture is modules containing use-case slices, with app/ composition root, shared/ kernel, _about.md catalogs, import rules, forbidden folder names and size caps
+- [x] #5 meta/core/tools/structure.py checks layout, catalogs, forbidden names and size caps deterministically, with tests; init-factory wires it, a boundary checker, duplication and dead-code checks into one check command
+- [x] #6 Searcher worker is replaced by deterministic meta/core/tools/packet.py, with tests
+- [x] #7 Guides support changing behaviour (plan lists tests to retire, test-writer edits only those), a tidy step after green, and test names carrying TASK-n#k
+- [x] #8 Each rule has one home: generic testing practice merged into the test guide, dead domain-row mechanism removed, agent files only point to their guide, core guides cite the stack datastore instead of PostgreSQL
+- [x] #9 init-factory matches the 5 grouped gates of HD-5 and records one stack decision instead of one per row
+- [x] #10 README is a human entry, PLAN.md becomes meta/core/design.md without status lists, governance merged into AGENTS.md, template settings carry no stack or personal entries, and a PreToolUse guard blocks force-push and recursive force-remove variants
+- [x] #11 meta/core/tools/check-harness.sh passes
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -147,4 +147,14 @@ review fixes A (findings 1,2,18): .gitkeep in every backlog folder (root and met
 review fixes B (findings 3,17): guard.py checks newline-separated commands, shell keywords and braces, wrappers with value options (timeout, nice, env -u, xargs -n), bash flag groups containing c, backticks and $(...), find -exec/-execdir, unique long-option abbreviations for push and rm; unbalanced quotes fall back to word split. 22 new blocked and 6 new allowed cases; tests green. Heredocs whose lines look like blocked commands are blocked (conservative).
 
 review fixes D (findings 9-14,20,25): stack.md rows name case, entry file stems, fix command; cells must be bare values. structure.py: --case, extension list tolerant of spaces, catalog requires backticked names (12 tests). packet.py: tolerant table parsing, distinct errors for missing file, missing row, TBD, non-path value; entry stems from stack (9 tests). Stack phase: case/stems passed to structure.py, duplication ignores tests, scaffold includes app/ entry so checkers have input, test runner must collect same-named test files; architecture overrides must keep the module/slice skeleton. Seed and skeleton use the stack's name case and stems.
+
+review fixes C+E (findings 4-8,15,16,19,21-24): orchestrator records start sha, checks git status against each step's allowlist, diffs start..HEAD at verify, commits per step and pushes once after verify; intake accepts existing/promoted tasks and init source tags; plan adds app/ wiring step, Retire (delete | rewrite as TASK-n#k) and Change lines; fix command after test-writer and before check; test-file findings go to test-writer tidy mode; outside-plan findings stop the task. test guide: change lines, new-module tables, size cap stop, tidy run. Overlay reset tolerates missing tables. design.md: handler-level behaviour tests are the acceptance evidence. AGENTS: product tasks push after green. check-harness: product guides accepted for added workers; in clones deny entries and hooks compared with merge base (verified FAIL on removed deny, ok on added allow).
+
+Validation: test_guard, test_packet, test_practices, test_structure all OK; check-harness ok; scratch clones: core-path edit FAILs, removed deny FAILs, added allow ok; fresh clone creates decisions and drafts; root backlog empty; 14 harness decisions = 14 HD rows; guard hook blocked rm -fr live in this session. Independent review (25 findings) all addressed in commits e9bf097..96ef3cc.
 <!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Harness v2. Layers: meta/core (template-owned, enforced in clones by check-harness against the merge base, including settings deny/hooks) and meta/product (stack.md, overlays, practices, optional overrides). Harness backlog moved to meta/core/backlog; root backlog ships empty with tracked folders. Decisions get rationale in meta/core/decisions.md (HD-1..HD-14). Product architecture: modules owning tables with flat use-case slices, app/ composition root, shared/ kernel, backticked _about.md catalogs, import rules, forbidden catch-all names, size caps; structure.py enforces layout, catalogs, names, case and caps; init wires it with boundary, duplication and dead-code checkers into scripts/check.sh plus a fix command. Searcher replaced by deterministic packet.py. Orchestrator: start sha, per-step allowlist check, Retire/Change lines, app/ wiring step, tidy step (implementer or test-writer), push once green, accepts promoted drafts. One home per rule; agents point to guides; init-factory has five gates and one stack decision. README and design doc rewritten; governance in AGENTS.md; guard.py PreToolUse hook blocks force-push, recursive force-remove and sudo in all tested spellings. Verified with four tool test suites, check-harness, scratch-clone negative tests, a live hook block, and an independent review whose 25 findings were fixed.
+<!-- SECTION:FINAL_SUMMARY:END -->
