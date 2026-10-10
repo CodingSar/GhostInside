@@ -1,16 +1,15 @@
-# Registry: persistence (default)
+# Persistence: PostgreSQL only (default)
 
-Decision: Backlog `HD-2`. PostgreSQL is the only datastore. This is a
-default: `init-factory` may supersede it by a ratified decision (`HD-6`).
+Decision: `HD-2`. A product overrides it only with
+`meta/product/persistence.md`, written for a ratified superseding decision
+(`HD-6`, `HD-9`).
 
-- No other database: no SQLite, no document store, no key-value store as
-  primary storage. A cache or queue needs a Backlog decision first.
-- Tests run against a real PostgreSQL. No in-memory fake of PostgreSQL. No
-  mocked database.
-- Connection string comes from the environment variable `DATABASE_URL`. This
-  is the default name; `init-factory` confirms or changes it.
-- Each slice owns its tables. Table names are prefixed with the slice name.
-  Migrations live in the slice's `migrations/` folder and run in order.
-- Only a slice's `store` file runs queries against its own tables.
-- Mocks: the database is never mocked. Mock only clock, randomness, and
-  network.
+- PostgreSQL is the only datastore. No SQLite, no document store, no
+  key-value store as primary storage. A cache or queue needs a product
+  decision first.
+- The connection string comes from the connection variable in
+  `meta/product/stack.md` (default `DATABASE_URL`).
+- A module owns its tables. Table names start with `<module>_`. Migrations
+  live in the module's `migrations/` folder and run in order.
+- Only the module's `store` runs queries against its tables.
+- Tests run against a real PostgreSQL, as the test guide says.
