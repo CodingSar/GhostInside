@@ -29,10 +29,11 @@ if grep -rn 'claude -p' .claude meta --include='*.md' --exclude-dir=backlog; the
   bad "headless launch reference found (see above)"
 fi
 
-# 3. Every worker runs on Haiku for now, and names the guide it reads first.
+# 3. Every worker runs on Haiku for now, and names the guide it reads first
+#    (a core guide, or a product guide for workers init-factory adds).
 for agent in .claude/agents/*.md; do
   grep -q '^model: claude-haiku-5-5$' "$agent" || bad "$agent is not on claude-haiku-5-5"
-  grep -q 'meta/core/guides/' "$agent" || bad "$agent names no guide"
+  grep -qE 'meta/(core/guides|product)/' "$agent" || bad "$agent names no guide"
 done
 
 # 4. Vendored practice packs match their lock.
@@ -61,6 +62,16 @@ if git rev-parse -q --verify harness/main >/dev/null 2>&1; then
     # shellcheck disable=SC2086
     changed=$(git diff --name-only "$base" -- $core_paths)
     [ -z "$changed" ] || bad "template-owned paths changed in this clone (change them in the template): $changed"
+    # Deny entries and hooks in settings.json are template-owned; allow entries are not.
+    git show "$base:.claude/settings.json" 2>/dev/null | python3 -I -c '
+import json, sys
+base, now = json.load(sys.stdin), json.load(open(".claude/settings.json"))
+deny = lambda s: sorted(s.get("permissions", {}).get("deny", []))
+missing = sorted(set(deny(base)) - set(deny(now)))
+if missing or base.get("hooks") != now.get("hooks"):
+    print("deny entries removed: %s; hooks changed: %s" % (missing, base.get("hooks") != now.get("hooks")))
+    sys.exit(1)
+' || bad "settings.json deny entries or hooks differ from the harness version"
   fi
 fi
 

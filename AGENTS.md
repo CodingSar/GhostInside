@@ -4,7 +4,7 @@
 
 - Default branch `main`, remote `origin`.
 - Harness changes commit directly to `main`, in small commits, one per coherent change. Commits are the rollback path to earlier, better harness versions.
-- Push after each commit. The orchestrator (main thread) may push. Subagents never commit or push.
+- Harness changes: push after each commit. Product tasks: commit per step, push once the task's full suite and check pass (`meta/core/guides/orchestrate.md`). The orchestrator (main thread) may push. Subagents never commit or push.
 - Never force-push. Never rewrite published history.
 
 ## Harness

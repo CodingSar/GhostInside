@@ -8,7 +8,8 @@ This guide is the single home of the testing rules.
 ## 1. Read
 
 From the prompt: the task id, the criteria with their numbers, the slice
-paths, the packet, the retire list, and the test command.
+paths, the packet, the `Retire:` and `Change:` lines, and the test command.
+A prompt that starts with `tidy:` is a tidy run: go to section 8.
 
 If `meta/product/overlays/test.md` exists, read it next. It adds stack
 specifics: test file naming, fixtures, datastore reset, the not-implemented
@@ -31,10 +32,17 @@ Read the slice folders named in the prompt, for names and signatures only.
 - A criterion without GIVEN / WHEN / THEN form: write the test from its plain
   text and say so in your reply.
 
-## 3. Retire
+## 3. Retire and change
 
-Edit or delete only the tests on the retire list, as the list says. Every
-other existing test stays exactly as it is.
+- `Retire: <file> :: <test> -> delete`: delete that test.
+- `Retire: <file> :: <test> -> rewrite as TASK-n#k`: replace it with the test
+  for that criterion, under the new name.
+- `Change: <handler> :: <old> -> <new>`: change the handler's signature and
+  its `index` re-export to the new one. Leave the body as it is; the
+  implementer adapts it. If the body no longer compiles against the new
+  signature, replace it with not-implemented and say so in your reply.
+
+Every other existing test stays exactly as it is.
 
 ## 4. Shape of the test
 
@@ -50,6 +58,9 @@ other existing test stays exactly as it is.
 - Determinism: no sleeps, no real network, no wall-clock time without an
   injected clock, seeded randomness. Each test is independent; reset the
   datastore state as the overlay says.
+- A new module's tables do not exist yet: setup must not create, query, or
+  require them. The handler stub fails first; the implementer adds the
+  migration.
 - Arrange, act, assert. One act per test. A failing test names its criterion
   and shows expected and actual values.
 
@@ -66,17 +77,28 @@ no defaults, no constants that encode rules.
 - Two criteria that expect the same thing: stop and report the duplicate.
 - A criterion that cannot be expressed through the handler's signature: stop
   and report it. Do not invent a substitute.
+- Keep each test short; shared arrange code goes in fixtures in the same
+  file. If the slice's test file would pass the test file cap in the
+  architecture, stop and report: the slice holds more than one use case.
 
 ## 7. Forbidden
 
 - Skip, todo, pending, or xfail markers.
 - Tests that pass on not-implemented.
-- Edits to tests outside the retire list.
+- Edits to tests outside the `Retire:` lines, and signature edits outside
+  the `Change:` lines.
 - Writes outside the named slice folders and the `index` re-export lines.
 - Snapshot tests of unspecified output.
 - Adding a criterion, or a rule the criteria do not state.
 
-## 8. Finish
+## 8. Tidy run
+
+The prompt lists check findings in test files. Fix only those: split long
+tests, move repeated arrange code into fixtures in the same file, apply the
+lint rule named. Test names, literal values, and assertions stay exactly as
+they are. A finding you cannot fix that way: report it as blocked.
+
+## 9. Finish
 
 Final line: `RESULT: ok tests=<count> stubs=<count> retired=<count>`, or
 `RESULT: blocked <reason>`.

@@ -46,10 +46,12 @@ proposes the stack and practices and the user ratifies them (`HD-5`).
 4. Test first: `test-writer` writes one test per criterion (`TASK-n#k`) and
    the stubs. All new tests fail for the right reason; all others pass.
 5. Implement: one `implementer` per plan step, inside a file allowlist.
-6. Tidy: the check command (lint, boundaries, structure, duplication, dead
-   code) runs; findings in the plan's files get one tidy step.
-7. Verify: full suite and check command once; changed files match the plan.
-8. Close out: criteria checked only with run evidence. Commit and push.
+6. Tidy: the fix and check commands (lint, boundaries, structure,
+   duplication, dead code) run; findings in the plan's files get one tidy
+   run, findings elsewhere stop the task.
+7. Verify: full suite and check command once; changed files since the start
+   match the plan. Then one push, so the remote `main` stays green.
+8. Close out: criteria checked only with run evidence.
 
 ## Product code
 
@@ -72,7 +74,8 @@ checker enforce them on every task.
 
 ## Evaluation
 
-End-to-end tests are the acceptance evidence for each task. Factory-level
+Behaviour tests through each slice's handler, against the real datastore,
+are the acceptance evidence for each task. Factory-level
 evaluation is separate: run the same small tasks through the factory and
 record how often the first pass is green, how many files fall outside the
 plan, how many retries and tidy runs a task needs, and how large the

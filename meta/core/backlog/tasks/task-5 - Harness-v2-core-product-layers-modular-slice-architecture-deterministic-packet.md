@@ -7,7 +7,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:25'
+updated_date: '2026-10-10 09:26'
 labels: []
 dependencies: []
 modified_files:
@@ -145,4 +145,6 @@ step 7: README rewritten as human entry (start a product, layout, harness work);
 review fixes A (findings 1,2,18): .gitkeep in every backlog folder (root and meta/core) - verified decision and draft creation in a fresh clone; preflight runs git push -u origin main after the remote rename and every push names origin main; first-run clean tree allows an untracked CONCEPT.md.
 
 review fixes B (findings 3,17): guard.py checks newline-separated commands, shell keywords and braces, wrappers with value options (timeout, nice, env -u, xargs -n), bash flag groups containing c, backticks and $(...), find -exec/-execdir, unique long-option abbreviations for push and rm; unbalanced quotes fall back to word split. 22 new blocked and 6 new allowed cases; tests green. Heredocs whose lines look like blocked commands are blocked (conservative).
+
+review fixes D (findings 9-14,20,25): stack.md rows name case, entry file stems, fix command; cells must be bare values. structure.py: --case, extension list tolerant of spaces, catalog requires backticked names (12 tests). packet.py: tolerant table parsing, distinct errors for missing file, missing row, TBD, non-path value; entry stems from stack (9 tests). Stack phase: case/stems passed to structure.py, duplication ignores tests, scaffold includes app/ entry so checkers have input, test runner must collect same-named test files; architecture overrides must keep the module/slice skeleton. Seed and skeleton use the stack's name case and stems.
 <!-- SECTION:NOTES:END -->

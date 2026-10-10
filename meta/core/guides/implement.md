@@ -28,11 +28,14 @@ Read only the allowlisted files and the test files for the covered criteria.
   through their `index`, tables only through the module's `store`.
 - Add a dependency only if `meta/product/stack.md` approves it. Otherwise
   deviation.
+- After a `Change:` line, the test-writer has already changed the handler's
+  signature. Adapt its body and the callers on your allowlist to it.
 
 A step that starts with `tidy:` changes structure only: split, move, or
 deduplicate code inside the allowlist until the listed findings are gone.
-Behaviour stays the same and the targeted tests stay green. Run the check
-command from `meta/product/stack.md` as well as the targeted tests.
+Behaviour stays the same and the targeted tests stay green. Run the fix
+command, then the check command from `meta/product/stack.md`, as well as the
+targeted tests.
 
 ## 3. Check
 

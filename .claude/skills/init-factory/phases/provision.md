@@ -26,7 +26,8 @@ Commands below are the values in `meta/product/stack.md`, copied verbatim.
 
 - `test.md`: the test file name inside a slice (it must match the stack's
   test file pattern), how test names carry `TASK-n#k` in this language, how
-  to reach the test database, how state is reset between tests, the
+  to reach the test database, how state is reset between tests (the reset
+  must tolerate tables that do not exist yet), the
   not-implemented idiom for stubs, and how a module `index` re-exports a
   handler. If the datastore was superseded, the replacement and how tests
   reach it.
