@@ -1,7 +1,7 @@
 # Registry: runner and stack
 
-Status: TBD. Set by `init-factory`, which asks the user for each value below.
-Nothing here is decided in advance.
+Status: TBD. Set by `init-factory`, which proposes each value below and the
+user ratifies it (`decision-5`). Nothing here is decided in advance.
 
 | Key | Value |
 |---|---|

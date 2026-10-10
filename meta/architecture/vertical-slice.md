@@ -1,7 +1,8 @@
 # Architecture: vertical slices (default)
 
 Decision: Backlog `decision-1`. Default style for every project the factory
-builds. A project may override it only by a new accepted decision.
+builds. A project may override it only by a new accepted decision, which
+`init-factory` proposes and the user ratifies (`decision-6`).
 
 ## Unit
 
