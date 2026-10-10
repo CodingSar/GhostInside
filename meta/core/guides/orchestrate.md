@@ -2,26 +2,25 @@
 
 You run in the main thread. You own one Backlog task from intake to Done.
 You never write application code. Workers are Haiku subagents that you launch
-with the Agent tool. Subagents cannot launch subagents, so every step below is
-yours to run.
+with the Agent tool: `test-writer` and `implementer`. Subagents cannot launch
+subagents, so every step below is yours to run.
 
 Backlog is the plan of record. The task holds the description, the
 acceptance criteria (the cases), the plan, the notes, the final summary, and
-the dependencies. Do not create plan files.
+the dependencies. Do not create plan files. Use the Backlog CLI for every
+task change; read `backlog instructions task-creation`, `task-execution`, and
+`task-finalization` at the step that names them.
 
-Use the Backlog CLI for every task change. Read `backlog instructions
-task-creation`, `task-execution`, and `task-finalization` at the step that
-names them. Do not edit Backlog markdown files.
+Commands come from `meta/product/stack.md`: install, migration, test (full
+and targeted), and check.
 
 ## 0. Preflight
 
 1. Run `backlog instructions overview` once per conversation.
 2. Read `meta/product/stack.md`. If the test command says TBD, stop and tell
-   the user the stack is not set and init-factory must run first. Do not
-   invent a runner.
-3. Read `meta/_about.md` to know what the catalog holds.
-4. If the file `orchestrate.md` exists in `meta/product/overlays/`, read it. It
-   adds stack specifics to this guide. It never removes a stop rule.
+   the user the stack is not set and init-factory must run first.
+3. If `meta/product/overlays/orchestrate.md` exists, read it. It adds stack
+   specifics to this guide. It never removes a stop rule.
 
 ## 1. Intake: create the task
 
@@ -31,15 +30,12 @@ Follow `backlog instructions task-creation`.
   of one feature.
 - Description: why the work exists, in the user's words. Do not restate the
   criteria.
-- Acceptance criteria are the cases. One criterion per line. Testable. When
-  it describes behaviour, write it as `GIVEN <state> WHEN <action> THEN <outcome>`.
-  Criteria are numbered by position: #1, #2, and so on.
-- Source rule: every criterion must trace to the user's request. If you cannot
-  point to the user's words for it, prefix it with `ASSUMED:` and ask the user
-  to confirm before step 3. Do not invent rules.
-- Labels: `slice:<name>` for each slice touched. Use `--dep` for ordering.
-- References: add `--ref meta/core/defaults/architecture.md` and any registry
-  file that applies.
+- Acceptance criteria are the cases. One per line, testable, numbered by
+  position. Behaviour is written `GIVEN <state> WHEN <action> THEN <outcome>`.
+- Source rule: every criterion traces to the user's request. If you cannot
+  point to the user's words for it, prefix it `ASSUMED:` and ask the user to
+  confirm before step 3.
+- Labels: `module:<name>` for each module touched. Use `--dep` for ordering.
 
 ## 2. Activate
 
@@ -47,26 +43,36 @@ Follow `backlog instructions task-creation`.
 
 ## 3. Research and plan
 
-1. Launch `searcher` (Agent tool). Prompt it with: the topics
-   `architecture`, `registry`, `practices:testing`, `practices:review`, `slice:<name>`, and the
-   slice path. Read only its final `RESULT` line and the packet's gap list.
-   Any gap stops the run: report it to the user.
-2. Write the plan: `backlog task edit TASK-n --plan "..."`. Numbered steps.
-   Each step names: the slice folder, the exact files it creates or edits,
-   the criterion numbers it covers, and the targeted test command. Keep it
-   under about ten steps.
-3. If the plan makes a product or architecture decision that is not already
-   in `backlog decision list --plain`, ask the user before continuing.
+1. For each module and slice the task touches, run
+   `python3 -I meta/core/tools/packet.py <module> [<slice>]`. A non-zero exit
+   stops the run. Its notes name new modules and slices; that is expected.
+2. Write the plan: `backlog task edit TASK-n --plan "..."`. Numbered steps,
+   about ten at most. Each step names the slice folder, the exact files it
+   creates or edits, the criterion numbers it covers, and the targeted test
+   command. Follow the architecture in the packet: one slice per use case,
+   tables only through the module's `store`, other modules only through
+   their `index`.
+3. Retire list: when a criterion changes behaviour that existing tests pin,
+   add a `Retire:` line per test: file, test name, the criterion that
+   replaces it. A test not on the list is never edited or deleted.
+4. Ask the user before continuing when the plan makes a product or
+   architecture decision that `backlog decision list --plain` does not
+   cover: a new `shared/` addition, a module split or merge, a new
+   dependency, an override of a default. A new module for a new area of the
+   domain needs no decision; name it in the plan.
 
 ## 4. Test first
 
 1. Launch `test-writer` with: the task id, the criteria verbatim with their
-   numbers, the slice path, the testing packet text, the review rules from
-   the `practices:review` packet, and the test command.
-2. Run the test command yourself. Gate: every new test fails with an
-   assertion or a not-implemented error. An import error, a collection error,
-   or any passing new test is a failure.
-3. On failure: relaunch `test-writer` once with the exact error text. If it
+   numbers, the slice paths, the packet output, the retire list, and the full
+   test command.
+2. Catalogs: add each new module to `<source root>/_about.md` and each new
+   slice to its module's `_about.md`, one line each, with its purpose.
+3. Run the full test command yourself. Gate: every new or rewritten test
+   fails with an assertion or a not-implemented error; every other test
+   passes. An import error, a collection error, or a passing new test fails
+   the gate.
+4. On failure: relaunch `test-writer` once with the exact error text. If it
    fails again, stop and report.
 
 ## 5. Implement, one plan step at a time
@@ -74,56 +80,66 @@ Follow `backlog instructions task-creation`.
 For each step, in order:
 
 1. Launch `implementer` with: the step text, the criteria it covers, the
-   exact file allowlist, the targeted test command, the review rules from
-   the `practices:review` packet, and the budget (two iterations inside the
-   worker).
-2. Read its `RESULT` line. `ok`: run the targeted command yourself to confirm.
-   `deviation` or `blocked`: stop and report. Do not retry deviations.
-3. Record progress: `backlog task edit TASK-n --append-notes "step <n>: <result>"`.
-4. Commit and push the step (see section 7).
+   exact file allowlist, the targeted test command, the packet output, and
+   the budget (two iterations inside the worker).
+2. Read its `RESULT` line. `ok`: run the targeted command yourself to
+   confirm. `deviation` or `blocked`: stop and report. Do not retry
+   deviations.
+3. `backlog task edit TASK-n --append-notes "step <n>: <result>"`.
+4. Commit and push the step (section 8).
 
-Retries are for probabilistic misses only. A failing targeted test may get one
-relaunch with the error text. Gaps, deviations, ambiguity, and out-of-allowlist
-changes get no retry.
+A failing targeted test may get one relaunch with the error text. Gaps,
+deviations, ambiguity, and out-of-allowlist changes get no retry.
 
-Optional, for a single step that keeps failing after one relaunch: run up to
-three implementers in separate git worktrees, keep the first whose targeted
-tests pass, and discard the rest. Only use this if the user has asked for it.
+Optional, only if the user asked for it: for a step that keeps failing after
+one relaunch, run up to three implementers in separate git worktrees, keep
+the first whose targeted tests pass, and discard the rest.
 
-## 6. Verify
+## 6. Tidy
 
-1. Run the full test command once. Everything must pass.
-2. Compare `git diff --name-only` with the files listed in the plan. Any file
-   outside the plan is a deviation: stop and ask the user.
-3. If `meta/` or `.claude/` changed, run `meta/core/tools/check-harness.sh`.
-4. Record modified files for groma: `backlog task edit TASK-n --modified-file <path>`
-   for each changed path. Follow `groma agent-instructions backlog`.
+Run the check command. It covers lint, import boundaries, structure and size
+caps, duplication, and dead code.
 
-## 7. Commit and push
+- Findings in files of this plan: launch `implementer` once with the step
+  `tidy: <the finding lines>`, the allowlist of those files (plus the
+  module's `model` when duplication moves there), and the targeted test
+  command. Behaviour must not change; the tests stay as they are.
+- Findings in files outside this plan: do not fix them here. Report them and
+  ask the user whether to create a follow-up task.
+- Still failing after one tidy run: stop and report.
 
-- Commit after each passing step and after harness changes. Small commits,
-  one coherent change each. Message in the imperative, with the task id.
-- Then `git push origin main`. Never force-push.
-- If the push fails, report the error. Do not work around it.
+## 7. Verify
 
-## 8. Close out
+1. Run the full test command once. Everything passes.
+2. Run the check command once. It exits 0.
+3. Compare `git diff --name-only` with the plan's files and the catalogs.
+   Any other file is a deviation: stop and ask the user.
+4. If `meta/` or `.claude/` changed, run `meta/core/tools/check-harness.sh`.
+
+## 8. Commit and push
+
+- Commit after each passing step and after the tidy run. Small commits, one
+  coherent change each, imperative message with the task id.
+- Then `git push origin main`. Never force-push. If the push fails, report
+  the error; do not work around it.
+
+## 9. Close out
 
 Follow `backlog instructions task-finalization`.
 
 1. Check a criterion only with evidence from this run: `--check-ac <n>`.
    Evidence is test output, not code presence.
-2. `--final-summary "..."` with what changed and how it was verified.
+2. `--final-summary "..."`: what changed, tests retired, how it was verified.
 3. Set the terminal status: `-s Done`.
 4. Report to the user: task id, each criterion with its evidence, any
-   `ASSUMED:` criteria still open, and any deviations.
+   `ASSUMED:` criteria still open, deviations, and follow-ups.
 
 ## Stop rules
 
 Stop and report instead of looping on:
 
-- The test command is TBD.
+- The test command is TBD, or `packet.py` exits non-zero.
 - A criterion marked `ASSUMED:` is still unconfirmed.
-- The searcher reports gaps.
 - A worker returns `deviation` or `blocked`.
 - A retry budget is spent.
 - A change falls outside the plan's files.

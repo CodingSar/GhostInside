@@ -7,7 +7,7 @@ status: In Progress
 assignee:
   - '@claude'
 created_date: '2026-10-10 09:01'
-updated_date: '2026-10-10 09:05'
+updated_date: '2026-10-10 09:07'
 labels: []
 dependencies: []
 modified_files:
@@ -47,6 +47,12 @@ modified_files:
   - meta/product/stack.md
   - meta/registry/_about.md
   - meta/tools/check-harness.sh
+  - >-
+    meta/core/backlog/decisions/decision-11 -
+    Default-product-architecture-modules-of-use-case-slices-app-composition-root-shared-kernel-catalogs-size-caps-enforced-by-structure.py-amends-decision-1.md
+  - meta/core/tools/__pycache__/structure.cpython-314.pyc
+  - meta/core/tools/structure.py
+  - meta/core/tools/test_structure.py
 priority: high
 type: enhancement
 ordinal: 5000
@@ -92,4 +98,6 @@ Commit and push after each step; check-harness before each commit.
 step 1: harness backlog moved to meta/core/backlog, empty product backlog/ at root (backlog init, integration none). Verified: root task list empty, BACKLOG_CWD=meta/core lists TASK-1..5.
 
 step 2: meta split into core/ (guides, defaults, tools, decisions.md, design.md, backlog) and product/ (stack.md, practices/, overlays/ later). decisions.md HD-1..HD-10 with rationale; decision-9/10 created in harness backlog; citations renamed decision-n -> HD-n. harness-review.md merged into AGENTS.md Governance. check-harness: optional product refs, tests glob, clone check (template-owned paths vs merge-base with harness/main) - verified FAIL on edited core guide in scratch clone, ok when clean.
+
+step 3: architecture.md rewritten (modules > slices, app/, shared/, catalogs, import rules, forbidden names, caps); persistence.md per-module tables; structure.py + test_structure.py (9 tests green); HD-11 / decision-11.
 <!-- SECTION:NOTES:END -->

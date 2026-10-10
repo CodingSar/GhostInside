@@ -7,28 +7,32 @@ tests depend on.
 ## 1. Read
 
 From the prompt: the step text, the criteria it covers, the exact file
-allowlist, the targeted test command, the review rules, and your iteration
-budget. Follow the review rules in the code you write; a review rule that
-conflicts with a test is a deviation.
+allowlist, the targeted test command, the packet, and your iteration budget.
 
-If the file `implement.md` exists in `meta/product/overlays/`, read it next. It
-adds stack specifics (commands, paths, idioms) to this guide. It never relaxes
-a forbidden item.
+If `meta/product/overlays/implement.md` exists, read it next. It adds stack
+specifics: idioms, the migration command, the linter's fix mode, and review
+rules it carries verbatim. It never relaxes a forbidden item.
+
+The packet holds the architecture, the stack, and the review rules. Follow
+them in the code you write. A review rule that conflicts with a test is a
+deviation.
 
 Read only the allowlisted files and the test files for the covered criteria.
-Read `meta/core/defaults/architecture.md` once if you are unsure where a
-change belongs.
 
 ## 2. Implement
 
 - Replace not-implemented bodies only in allowlisted files.
-- Write the least logic that satisfies the covered tests. Do not add branches
-  for cases no test or criterion names.
-- Keep to the slice: other slices are reached only through their entry file.
-- Persistence uses PostgreSQL only, through the slice's `store` file, and only
-  for tables the slice owns.
-- Add a dependency only if it is already listed in `meta/product/stack.md`. Otherwise
+- Write the least logic that satisfies the covered tests. No branches for
+  cases no test or criterion names.
+- Follow the import rules in the packet's architecture: other modules only
+  through their `index`, tables only through the module's `store`.
+- Add a dependency only if `meta/product/stack.md` approves it. Otherwise
   deviation.
+
+A step that starts with `tidy:` changes structure only: split, move, or
+deduplicate code inside the allowlist until the listed findings are gone.
+Behaviour stays the same and the targeted tests stay green. Run the check
+command from `meta/product/stack.md` as well as the targeted tests.
 
 ## 3. Check
 
@@ -43,7 +47,7 @@ Stop at once when:
 - a file outside the allowlist must change;
 - a signature, a type, or a shared structure does not fit;
 - a test looks wrong. Tests are not yours to edit;
-- a needed dependency is not in the registry;
+- a needed dependency is not approved in the stack;
 - the step is ambiguous.
 
 Do not work around it. Report the exact error or conflict.
@@ -54,7 +58,7 @@ Do not work around it. Report the exact error or conflict.
 - Changing a stub's signature or types.
 - Editing `meta/`, `.claude/`, or Backlog files.
 - Committing or pushing.
-- Refactoring or tidying outside the step.
+- Changes outside the step.
 - Skipping, disabling, or weakening a test.
 
 ## 6. Final line

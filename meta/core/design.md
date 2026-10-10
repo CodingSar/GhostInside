@@ -18,7 +18,7 @@ domain practices and the user ratifies them.
 |---|---|---|
 | Backlog tasks | `backlog/` | Plan of record. Acceptance criteria are the cases. |
 | Orchestrator | main thread, `meta/core/guides/orchestrate.md` | Owns one task from intake to Done. Launches workers. Runs tests. Commits and pushes. |
-| Workers | `.claude/agents/`, Haiku | `searcher` (read-only), `test-writer`, `implementer`. Each reads one guide first. |
+| Workers | `.claude/agents/`, Haiku | `test-writer`, `implementer`. Each reads one guide first. |
 | Guides | `meta/core/guides/` | Procedures. Core guides are written by a human and owned by the template. `init-factory` writes stack overlays in `meta/product/overlays/` only. |
 | Defaults | `meta/core/defaults/`, `meta/product/stack.md` | Vertical slices. PostgreSQL only. Runner TBD. Defaults are priors that `init-factory` may supersede by a ratified decision. |
 | Practices | `meta/product/practices/` | Testing rules. `init-factory` vendors facet packs from the central repo `CodingSar/GhostInsidePractices` and pins them in `practices.lock`. |
@@ -29,7 +29,7 @@ domain practices and the user ratifies them.
 
 1. Intake: orchestrator creates a Backlog task. Each criterion traces to the
    user's words, or is marked `ASSUMED:` until confirmed.
-2. Research: `searcher` returns a packet of verbatim rules. Gaps stop the run.
+2. Research: `meta/core/tools/packet.py` prints the rules and slice files, with file and line.
 3. Plan: orchestrator writes the plan into the task's `plan` field.
 4. Test first: `test-writer` writes one test per criterion and the stubs they
    call. The orchestrator runs them. All must fail for the right reason.

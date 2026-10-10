@@ -15,7 +15,7 @@ root and extensions in `meta/product/stack.md`.
   registry migration command, so the migration path is exercised.
 - `tests/`: `AC1 health check reports ok with a live datastore`, through the
   entry point, against the real datastore, as
-  `meta/core/defaults/testing.md` and the `test.md` overlay say.
+  `meta/core/guides/test.md` and the `test.md` overlay say.
 - `shared/`: the datastore connection, read from the registry's connection
   variable.
 
