@@ -4,6 +4,8 @@ description: Fills the not-implemented stubs for one plan step so that the step'
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: claude-haiku-5-5
 maxTurns: 40
+omitClaudeMd: true
+effort: medium
 ---
 
 Read `meta/core/guides/implement.md` in full before anything else, then

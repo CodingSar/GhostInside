@@ -30,9 +30,9 @@ if grep -rn 'claude -p' .claude meta --include='*.md' --exclude-dir=backlog; the
   bad "headless launch reference found (see above)"
 fi
 
-# 3. Every agent runs on Haiku, except the researcher (HD-16), and names the
+# 3. Every agent runs on Haiku, except the researcher (HD-16), names the
 #    guide it reads first (a core guide, or a product guide for workers
-#    init-factory adds).
+#    init-factory adds), caps its turns, skips CLAUDE.md, and pins its effort.
 for agent in .claude/agents/*.md; do
   if [ "$agent" = .claude/agents/researcher.md ]; then
     grep -qE '^model: claude-(sonnet|opus)-' "$agent" || bad "$agent is not on a research model"
@@ -41,6 +41,8 @@ for agent in .claude/agents/*.md; do
   fi
   grep -qE 'meta/(core/guides|product)/' "$agent" || bad "$agent names no guide"
   grep -qE '^maxTurns: [0-9]+$' "$agent" || bad "$agent sets no maxTurns"
+  grep -q '^omitClaudeMd: true$' "$agent" || bad "$agent does not omit CLAUDE.md (TASK-10)"
+  grep -qE '^effort: (low|medium|high)$' "$agent" || bad "$agent sets no effort (TASK-10)"
 done
 
 # 3b. Every loop agent exists, reads its loop guide, and the guide ends in RETURN lines.

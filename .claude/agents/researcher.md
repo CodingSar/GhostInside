@@ -4,6 +4,8 @@ description: Answers one research request from another loop agent with a short, 
 tools: Read, Grep, Glob, Write, WebSearch, WebFetch
 model: claude-sonnet-5-5
 maxTurns: 30
+omitClaudeMd: true
+effort: medium
 ---
 
 Read `meta/core/guides/research.md` in full before anything else, then

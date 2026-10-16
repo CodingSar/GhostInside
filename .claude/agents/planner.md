@@ -4,6 +4,8 @@ description: Writes a Backlog task's plan in the loop's step format (files, crit
 tools: Read, Grep, Glob, Write, Bash
 model: claude-haiku-5-5
 maxTurns: 40
+omitClaudeMd: true
+effort: medium
 ---
 
 Read `meta/core/guides/plan.md` in full before anything else, then follow

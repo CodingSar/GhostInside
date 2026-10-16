@@ -4,6 +4,8 @@ description: Writes one failing test per acceptance criterion of a Backlog task,
 tools: Read, Grep, Glob, Write, Edit
 model: claude-haiku-5-5
 maxTurns: 40
+omitClaudeMd: true
+effort: medium
 ---
 
 Read `meta/core/guides/test.md` in full before anything else, then follow it.

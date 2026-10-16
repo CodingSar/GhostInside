@@ -4,6 +4,8 @@ description: Turns a user request into a Backlog task whose acceptance criteria 
 tools: Read, Grep, Glob, Write, Edit, Bash
 model: claude-haiku-5-5
 maxTurns: 30
+omitClaudeMd: true
+effort: medium
 ---
 
 Read `meta/core/guides/intake.md` in full before anything else, then follow
