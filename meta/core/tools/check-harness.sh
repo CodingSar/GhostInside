@@ -13,7 +13,7 @@ bad() { echo "FAIL: $*"; fail=1; }
 # Template-owned paths (HD-9). In a product clone they never change.
 core_paths="meta/core meta/_about.md AGENTS.md CLAUDE.md .claude/skills/init-factory
   .claude/agents/intake.md .claude/agents/planner.md .claude/agents/researcher.md
-  .claude/agents/test-writer.md .claude/agents/implementer.md"
+  .claude/agents/test-writer.md .claude/agents/implementer.md .claude/agents/reviewer.md"
 
 # 1. Every harness path named by agents, skills, guides, or catalogs exists.
 #    Product files that exist only after init-factory, or only on override, are optional.

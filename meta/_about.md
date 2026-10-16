@@ -9,7 +9,7 @@ default of the same name in `core/defaults/`.
 
 | Path | What it holds |
 |---|---|
-| `core/guides/` | Procedures. The orchestrator reads `orchestrate.md`; each worker reads the guide its agent file names. |
+| `core/guides/` | Procedures. The orchestrator reads `orchestrate.md`; each worker reads the guide its agent file names (`review.md` is the reviewer's: diff, criteria, tests, nothing else). |
 | `core/defaults/` | Defaults a product may override: `architecture.md` (modules of slices), `persistence.md` (PostgreSQL only). |
 | `core/tools/` | Deterministic tools: `loop.py` (dispatcher loop, its hooks, the `test` wrapper workers run tests through, `report` for run metrics), `packet.py` (research packet for a module and slice), `structure.py` (product layout and size caps), `practices.py` (practice packs), `guard.py` (Bash and file-write hook; subagents get read-only git, no harness writes, and only the pending frame's allowlist), `check-harness.sh` (run before harness commits). Each Python tool has a `test_*.py`. |
 | `core/design.md` | The design of the factory. |

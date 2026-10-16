@@ -226,6 +226,13 @@ class LoopTest(unittest.TestCase):
         r.files({"src/modules/billing/slices/pay/handler.py": "def pay(order): return 'paid'\n"})
         r.fake(tests={"TASK-1#1 paid": "pass", "TASK-1#2 twice": "pass", "old test": "pass"})
         line = r.ok(line)
+        agent, text, _ = r.frame(line)
+        self.assertEqual(agent, "reviewer")
+        self.assertIn("Diff: `.scratch/run-1/review/diff.md`", text)
+        self.assertIn("- `src/modules/billing/slices/pay/test_pay.py`", text)
+        self.assertNotIn("## Edit only", text)
+        self.assertIn("+def pay(order): return 'paid'", (r.root / ".scratch/run-1/review/diff.md").read_text())
+        line = r.ok(line, "no gaps\n")
         self.assertTrue(line.startswith("DONE TASK-1 done: 3 tests green, 2 criteria checked"), line)
         t = r.tasks()["TASK-1"]
         self.assertEqual(t["status"], "Done")
@@ -238,12 +245,12 @@ class LoopTest(unittest.TestCase):
         self.assertTrue(all(re.match(r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\+00:00 \S", l) for l in log_lines), log_lines)
         rep = r.say("report")
         self.assertIn("task: TASK-1\noutcome: done\nelapsed: 0:00:", rep)
-        self.assertIn("launches: 4 (implementer=1 intake=1 planner=1 test-writer=1)", rep)
+        self.assertIn("launches: 5 (implementer=1 intake=1 planner=1 reviewer=1 test-writer=1)", rep)
         self.assertIn("relaunches: 0\nstops: 0\nsteps green on first try: 1/1\ntidy runs: 0\nframe bytes written: ", rep)
         self.assertGreater(int(rep.rsplit(" ", 1)[1]), 1000)
         rep = r.say("report", "--all")
         self.assertTrue(rep.startswith("run-1 TASK-1 done elapsed=0:00:"), rep)
-        self.assertIn(" launches=4 relaunches=0 stops=0 first-try=1/1 tidy=0 frames=", rep)
+        self.assertIn(" launches=5 relaunches=0 stops=0 first-try=1/1 tidy=0 frames=", rep)
 
     def test_next_repeats_the_pending_instruction_after_a_restart(self):
         line = self.r.say("start", "TASK-1")
@@ -475,12 +482,65 @@ class LoopTest(unittest.TestCase):
         r.files({"src/modules/billing/slices/pay/handler.py": "def pay(order): return 'paid'\n"})
         r.fake(check=[1, "src/modules/billing/slices/pay/handler.py:1: E501 line too long"])
         line = r.ok(line)
+        line = r.ok(line, "no gaps\n")
         agent, text, _ = r.frame(line)
         self.assertEqual(agent, "implementer")
         self.assertIn("tidy: src/modules/billing/slices/pay/handler.py:1: E501", text)
         r.fake(check=[1, "src/_about.md:1: bad catalog"])
         line = r.ok(line)
         self.assertTrue(line.startswith("STOP check still fails after one tidy run"), line)
+
+    def to_review(self):
+        r = self.r
+        line = r.to_red()
+        r.write_tests({"TASK-1#1 paid": "fail", "TASK-1#2 twice": "fail"})
+        line = r.ok(line)
+        r.files({"src/modules/billing/slices/pay/handler.py": "def pay(order): return 'paid'\n"})
+        r.fake(tests={"TASK-1#1 paid": "pass", "TASK-1#2 twice": "pass"})
+        line = r.ok(line)
+        self.assertEqual(r.frame(line)[0], "reviewer")
+        return line
+
+    def test_review_gaps_get_one_fix_run_then_tidy(self):
+        r = self.r
+        line = self.to_review()
+        line = r.ok(line, "- src/modules/billing/slices/pay/handler.py:1: paid twice not rejected (criterion 2)\n"
+                          "- src/other.py:3: ignored, outside the diff (criterion 1)\n")
+        agent, text, _ = r.frame(line)
+        self.assertEqual(agent, "implementer")
+        self.assertIn("Review fix for TASK-1", text)
+        self.assertIn("- src/modules/billing/slices/pay/handler.py:1: paid twice not rejected (criterion 2)", text)
+        self.assertIn("- `src/modules/billing/slices/pay/handler.py`", text.split("## Edit only")[1])
+        self.assertIn("Targeted test command: `python3", text)
+        r.files({"src/modules/billing/slices/pay/handler.py": "def pay(order):\n    return 'paid'\n"})
+        line = r.ok(line)
+        self.assertTrue(line.startswith("DONE TASK-1 done"), line)
+        self.assertIn("TASK-1: review fixes", r.git("log", "--format=%s"))
+        self.assertIn("review: 1 gaps, one fix run", r.tasks()["TASK-1"]["implementationNotes"])
+        self.assertEqual(r.say("report").count("reviewer=1"), 1)
+
+    def test_review_fix_that_breaks_the_suite_is_relaunched_once_then_stops(self):
+        r = self.r
+        line = self.to_review()
+        line = r.ok(line, "- src/modules/billing/slices/pay/handler.py:1: wrong (criterion 1)\n")
+        r.files({"src/modules/billing/slices/pay/handler.py": "def pay(order): return 'x'\n"})
+        r.fake(tests={"TASK-1#1 paid": "fail", "TASK-1#2 twice": "pass"})
+        line = r.ok(line)
+        agent, text, _ = r.frame(line)
+        self.assertEqual(agent, "implementer")
+        self.assertIn("Review fix, again.", text)
+        self.assertIn("FAIL: 1 of 2 tests pass, 1 fail", text)
+        self.assertEqual((r.root / "src/modules/billing/slices/pay/handler.py").read_text(),
+                         "def pay(order): return 'paid'\n")
+        line = r.ok(line)
+        self.assertTrue(line.startswith("STOP implementer failed twice (review-fix)"), line)
+
+    def test_reviewer_deviation_stops_the_run(self):
+        r = self.r
+        line = self.to_review()
+        line = r.say("done", "RETURN deviation diff file unreadable")
+        self.assertTrue(line.startswith("STOP"), line)
+        self.assertIn("diff file unreadable", line)
 
     def test_start_refuses_an_unset_stack(self):
         r = self.r

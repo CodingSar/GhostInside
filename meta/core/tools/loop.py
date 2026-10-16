@@ -15,7 +15,7 @@ next instruction.
 
 Everything deterministic runs here: preflight, the baseline suite, activation,
 packets, the red gate, test and check runs, the allowlist and plan-diff
-checks, the check that no agent moved HEAD, tidy routing, close-out, commits,
+checks, the check that no agent moved HEAD, the review diff, tidy routing, close-out, commits,
 and the push. Judgment runs in fresh subagents that end
 with one RETURN line. An agent that needs another agent or the user returns
 `call` or `ask`: its frame is pushed on a stack in .scratch/<run>/state.json
@@ -54,11 +54,14 @@ GUIDES = {
     "researcher": "meta/core/guides/research.md",
     "test-writer": "meta/core/guides/test.md",
     "implementer": "meta/core/guides/implement.md",
+    "reviewer": "meta/core/guides/review.md",
 }
 CALLS = {"intake": ["researcher"], "planner": ["researcher"]}  # allowed edges
 ASKERS = {"intake", "planner"}
 MAX_DEPTH = 3
-STEP_FILES = 4  # files per plan step; small models finish short steps (HD-23)          # frames in one chain, caller included
+STEP_FILES = 4  # files per plan step; small models finish short steps (HD-23)
+DIFF_LINES = 600  # the reviewer's diff is cut here (HD-24)
+GAP_RE = re.compile(r"^- (\S+?):(\d+): (.+)$")          # frames in one chain, caller included
 STOP_BLOCKS = 3        # times the Stop hook holds the main thread before letting go
 BUDGET = 2             # implementer iterations
 STACK_KEYS = {
@@ -620,7 +623,7 @@ def step_body(st, sv, s, crit):
 def enter_step(st, sv):
     steps = st["plan"]["steps"]
     if st["step"] >= len(steps):
-        st["phase"] = "tidy"
+        st["phase"] = "review"
         return
     s = steps[st["step"]]
     launch(st, "implementer", step_body(st, sv, s, criteria(st["task"])), allow=s["files"])
@@ -659,6 +662,73 @@ def findings(output, st, sv):
                 kind = "source"
             found[kind].setdefault(path, []).append(line.strip())
     return found
+
+
+def plan_files(st):
+    return list(dict.fromkeys(f for s in st["plan"]["steps"] for f in s["files"]))
+
+
+def enter_review(st, sv):
+    """After the last step: a fresh-context reviewer reads the diff, the criteria, and the tests."""
+    if st["reviewed"]:
+        st["phase"] = "tidy"
+        return
+    diff = git("diff", f"{st['start']}..HEAD", "--", sv["src"])
+    lines = diff.splitlines()
+    if len(lines) > DIFF_LINES:
+        lines = lines[:DIFF_LINES] + [f"... cut: {len(lines) - DIFF_LINES} more lines; open the files for the rest"]
+    rdir = run_dir(st) / "review"
+    rdir.mkdir(exist_ok=True)
+    diff_path = rdir / "diff.md"
+    diff_path.write_text("\n".join(lines) + "\n")
+    changed = git("diff", "--name-only", f"{st['start']}..HEAD", "--", sv["src"]).split()
+    tests = [p for p in changed if re.search(sv["tests"], p.rsplit("/", 1)[-1])]
+    body = "\n".join([
+        f"Review the change for {st['task']}.", "", "Criteria:",
+        *[f"{k}. {text}" for k, text in criteria(st["task"])], "",
+        f"Diff: `{diff_path.relative_to(ROOT)}`", "",
+        "Test files:", *([f"- `{t}`" for t in tests] or ["- none changed"])])
+    launch(st, "reviewer", body, allow=[])
+
+
+def review_fix_body(st, sv, gaps):
+    texts = dict(criteria(st["task"]))
+    return "\n".join([
+        f"Review fix for {st['task']}: a reviewer found these gaps between the criteria and the code. "
+        f"Close each one; the full test suite must stay green.", "", "Gaps:",
+        *[f"- {f}:{n}: {what}" for f, n, what in gaps], "", "Criteria:",
+        *[f"{k}. {t}" for k, t in texts.items()], "",
+        f"Targeted test command: `{sv['full']}`", "",
+        "Packets (read them):", *[f"- `{p}`" for p in packets(st, sv)], "",
+        f"Iteration budget: {BUDGET}"])
+
+
+def done_review(st, sv, fr):
+    if fr["agent"] == "reviewer":
+        check_allowlist(st, lambda p: False, "reviewer")
+        text = (ROOT / fr["out"]).read_text()
+        changed = set(git("diff", "--name-only", f"{st['start']}..HEAD", "--", sv["src"]).split())
+        gaps = [(m.group(1), m.group(2), m.group(3)) for m in map(GAP_RE.match, text.splitlines())
+                if m and m.group(1) in changed]  # a gap outside the diff is noise, not a finding
+        st["reviewed"] = True
+        if not gaps:
+            log(st, "review: no gaps")
+            st["phase"] = "tidy"
+            return
+        log(st, f"review: {len(gaps)} gaps")
+        backlog("task", "edit", st["task"], "--append-notes", f"review: {len(gaps)} gaps, one fix run")
+        return launch(st, "implementer", review_fix_body(st, sv, gaps[:8]), allow=plan_files(st))
+    files = plan_files(st)
+    check_allowlist(st, lambda p: p in files, "review fix")
+    code, _, _, dg = run_tests(st, sv, sv["full"], "review-fix")
+    if code:
+        git("checkout", "--", ".")
+        git("clean", "-fdq", "--", sv["src"])
+        return relaunch_once(st, fr, "review-fix", "\n".join([
+            "Review fix, again. The full suite failed after your changes and they were discarded. "
+            "Close the gaps without breaking a test:", "", dg]))
+    commit(st, f"{st['task']}: review fixes")
+    st["phase"] = "tidy"
 
 
 def enter_tidy(st, sv):
@@ -748,6 +818,7 @@ PHASES = {
     "plan": (enter_plan, done_plan),
     "red": (enter_red, done_red),
     "step": (enter_step, done_step),
+    "review": (enter_review, done_review),
     "tidy": (enter_tidy, done_tidy),
     "verify": (enter_verify, None),
     "close": (enter_close, None),
@@ -818,7 +889,7 @@ def cmd_start(arg):
     runs = [int(p.name[4:]) for p in (ROOT / SCRATCH).glob("run-*") if p.name[4:].isdigit()]
     st = {"run": f"run-{max(runs, default=0) + 1}", "task": None, "request": None, "phase": "intake",
           "seq": 0, "pending": None, "stack": [], "retries": {}, "step": 0, "plan": None, "start": None,
-          "tidy_queue": [], "tidied": False, "evidence": [], "stop": None, "stop_blocks": 0}
+          "tidy_queue": [], "tidied": False, "reviewed": False, "evidence": [], "stop": None, "stop_blocks": 0}
     run_dir(st).mkdir(parents=True)
     if re.fullmatch(r"TASK-\d+", arg):
         st["task"] = arg

@@ -43,7 +43,8 @@ Preflight (the stack must be set) -> intake agent (task and criteria) ->
 baseline (the full suite is green before the task) and activate -> planner agent (plan in the task) -> test-writer agent, then the
 red gate from the JUnit report -> one implementer per plan step, each
 held to its allowlist by the guard hook at write time and checked against it
-and the targeted tests after -> tidy (fix and check
+and the targeted tests after -> review (a fresh-context reviewer reads the
+diff against the criteria; gaps get one fix run) -> tidy (fix and check
 commands, findings routed to one tidy run) -> verify (full suite, check,
 changed files within the plan) -> close (criteria checked by their passing
 `TASK-n#k` tests) -> one push. It commits after each stage; an agent that

@@ -29,7 +29,7 @@ proposes the stack and practices and the user ratifies them (`HD-5`).
 | Backlog | root `backlog/` | Product plan of record. Acceptance criteria are the cases. |
 | Orchestrator | main thread on Sonnet (`HD-17`), `meta/core/guides/orchestrate.md` | Dispatcher: carries out the one line `loop.py` prints (LAUNCH, ASK, DONE, STOP) and reports each agent's `RETURN` line back (`HD-16`). |
 | Loop | `meta/core/tools/loop.py`, state in `.scratch/<run>/` | The task state machine. Runs every deterministic step, commits, pushes; keeps agent calls and questions as a frame stack on disk. |
-| Workers | `.claude/agents/`, Haiku | `intake`, `planner`, `test-writer`, `implementer`; `researcher` on a bigger model. Each reads one guide and one frame, and ends with one `RETURN` line. Workers skip `CLAUDE.md` (`omitClaudeMd`) and pin `effort: medium`, HD-18. |
+| Workers | `.claude/agents/`, Haiku | `intake`, `planner`, `test-writer`, `implementer`, `reviewer`; `researcher` on a bigger model. Each reads one guide and one frame, and ends with one `RETURN` line. Workers skip `CLAUDE.md` (`omitClaudeMd`) and pin `effort: medium`, HD-18. |
 | Guides | `meta/core/guides/`, overlays in `meta/product/overlays/` | Procedures, plus stack specifics per guide. |
 | Defaults | `meta/core/defaults/` | Modules of slices; PostgreSQL only. Overridden only by a product file and a ratified decision (`HD-6`, `HD-9`). |
 | Stack | `meta/product/stack.md` | Every command the factory runs. TBD in the template. |
@@ -52,12 +52,16 @@ Every stage below is run by `loop.py`; the main thread only dispatches.
 4. Test first: `test-writer` writes one test per criterion (`TASK-n#k`) and
    the stubs. All new tests fail for the right reason; all others pass.
 5. Implement: one `implementer` per plan step, inside a file allowlist.
-6. Tidy: the fix and check commands (lint, boundaries, structure,
+6. Review: a fresh-context `reviewer` reads only the diff, the criteria,
+   and the tests, and lists gaps with file and line. Gaps get one
+   implementer fix run inside the plan's files; a fix that breaks the
+   suite is discarded and retried once (HD-24).
+7. Tidy: the fix and check commands (lint, boundaries, structure,
    duplication, dead code) run; findings in the plan's files get one tidy
    run, findings elsewhere stop the task.
-7. Verify: full suite and check command once; changed files since the start
+8. Verify: full suite and check command once; changed files since the start
    match the plan. Then one push, so the remote `main` stays green.
-8. Close out: criteria checked only with run evidence.
+9. Close out: criteria checked only with run evidence.
 
 ## Product code
 

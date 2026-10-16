@@ -46,7 +46,7 @@
     ],
     "SubagentStop": [
       {
-        "matcher": "intake|planner|researcher|test-writer|implementer",
+        "matcher": "intake|planner|researcher|test-writer|implementer|reviewer",
         "hooks": [
           {
             "type": "command",
