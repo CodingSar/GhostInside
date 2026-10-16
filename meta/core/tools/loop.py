@@ -482,18 +482,23 @@ def criteria(task):
 
 
 def packets(st, sv):
-    paths = []
+    """Write the packets of the plan's modules: rules.md once per run, then one per module without
+    the rules. Returns their paths, rules first."""
     pdir = run_dir(st) / "packets"
     pdir.mkdir(exist_ok=True)
-    for module, slice_ in plan_modules(st, sv):
-        args = [module] + ([slice_] if slice_ else [])
-        out = subprocess.run([sys.executable, "-I", str(ROOT / "meta/core/tools/packet.py"), *args],
-                             cwd=ROOT, capture_output=True, text=True,
-                             env=dict(os.environ, GHOSTINSIDE_ROOT=str(ROOT)))
-        if out.returncode:
-            raise Stop(f"packet.py {' '.join(args)} failed: {first_line(out.stderr)}")
-        p = pdir / f"{'-'.join(args)}.md"
-        p.write_text(out.stdout)
+    jobs = [(["--rules"], "rules")]
+    jobs += [([m] + ([s] if s else []) + ["--no-rules"], "-".join([m] + ([s] if s else [])))
+             for m, s in plan_modules(st, sv)]
+    paths = []
+    for args, name in jobs:
+        p = pdir / f"{name}.md"
+        if name != "rules" or not p.exists():
+            out = subprocess.run([sys.executable, "-I", str(ROOT / "meta/core/tools/packet.py"), *args],
+                                 cwd=ROOT, capture_output=True, text=True,
+                                 env=dict(os.environ, GHOSTINSIDE_ROOT=str(ROOT)))
+            if out.returncode:
+                raise Stop(f"packet.py {' '.join(args)} failed: {first_line(out.stderr)}")
+            p.write_text(out.stdout)
         paths.append(str(p.relative_to(ROOT)))
     return paths
 

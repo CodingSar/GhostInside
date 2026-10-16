@@ -46,7 +46,7 @@ Every stage below is run by `loop.py`; the main thread only dispatches.
    the user's words or a source tag, or is marked `ASSUMED:` until
    confirmed. A task that adds or changes a screen first updates its mockup
    and gets the user's confirmation.
-2. Research: `meta/core/tools/packet.py` prints the rules and slice files, with file and line.
+2. Research: `meta/core/tools/packet.py` prints the rules (once per run) and the module and slice files, with file and line.
 3. Plan: the task's `plan` field. Steps name the slice, files, criteria,
    test command, and the tests the change retires.
 4. Test first: `test-writer` writes one test per criterion (`TASK-n#k`) and

@@ -15,7 +15,7 @@ If `meta/product/overlays/test.md` exists, read it next. It adds stack
 specifics: test file naming, fixtures, datastore reset, the not-implemented
 idiom. It never relaxes a forbidden item.
 
-The packets hold the architecture, the stack, and the review rules. Follow
+The first packet, `rules.md`, holds the architecture, the stack, and the review rules; the others hold one module each. Follow
 the review rules in the tests you write. A criterion overrides any rule; on
 a conflict, follow the criterion and note the conflict in your output file.
 

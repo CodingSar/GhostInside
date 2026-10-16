@@ -7,7 +7,12 @@ existing module and slice files. Every line carries its file and line number,
 so plans and reports can cite rules exactly. Deterministic: no model reads
 or copies these files.
 
-Usage: packet.py <module> [<slice>]
+Usage: packet.py <module> [<slice>] [--no-rules]
+       packet.py --rules
+
+`--rules` prints only the shared rules (architecture, persistence, stack,
+review); `--no-rules` leaves them out of a module packet. The loop prints
+the rules once per run and one module packet per module (HD-21).
 
 Exit 0 with the packet. A new module or slice is reported as a note, not an
 error. Exit 1 when the stack is not set or a harness file is missing.
@@ -60,9 +65,27 @@ def section(rel):
     print()
 
 
+def rules():
+    for rel in (effective("architecture.md"), effective("persistence.md"),
+                PRODUCT / "stack.md", PRODUCT / "practices" / "review.md"):
+        section(rel)
+
+
 def main(argv):
+    flags = {a for a in argv if a.startswith("--")}
+    argv = [a for a in argv if not a.startswith("--")]
+    if flags - {"--rules", "--no-rules"} or (flags and len(flags) > 1):
+        fail("usage: packet.py <module> [<slice>] [--no-rules] | packet.py --rules")
+    if "--rules" in flags:
+        if argv:
+            fail("usage: packet.py --rules takes no module")
+        stack_value("source root")
+        print("# Packet: rules")
+        print()
+        rules()
+        return 0
     if not 1 <= len(argv) <= 2:
-        fail("usage: packet.py <module> [<slice>]")
+        fail("usage: packet.py <module> [<slice>] [--no-rules] | packet.py --rules")
     module, slice_ = argv[0], (argv[1] if len(argv) == 2 else None)
     src = stack_value("source root")
     if re.search(r"\s", src):
@@ -74,9 +97,8 @@ def main(argv):
 
     print(f"# Packet: module={module}" + (f" slice={slice_}" if slice_ else ""))
     print()
-    for rel in (effective("architecture.md"), effective("persistence.md"),
-                PRODUCT / "stack.md", PRODUCT / "practices" / "review.md"):
-        section(rel)
+    if "--no-rules" not in flags:
+        rules()
 
     notes = []
     catalog = Path(src) / "_about.md"

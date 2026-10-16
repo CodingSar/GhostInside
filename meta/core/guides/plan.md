@@ -8,8 +8,9 @@ command. You write the plan, not code or tests.
 
 1. The task: `backlog task view <id> --plain`.
 2. `meta/product/stack.md` for the test commands and the source root.
-3. For each module and slice the task touches, the packet:
-   `python3 -I meta/core/tools/packet.py <module> [<slice>]`. A non-zero
+3. The rules once: `python3 -I meta/core/tools/packet.py --rules`. Then for
+   each module and slice the task touches, the packet without them:
+   `python3 -I meta/core/tools/packet.py <module> [<slice>] --no-rules`. A non-zero
    exit: `RETURN blocked <its error>`. Its notes name new modules and
    slices; that is expected.
 

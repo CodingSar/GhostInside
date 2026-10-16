@@ -67,6 +67,24 @@ class PacketTest(unittest.TestCase):
         self.assertIn("src/modules/billing/slices/pay/handler.py:1: def pay(): ...", out)
         self.assertTrue(out.rstrip().endswith("== notes ==\nnone"))
 
+    def test_rules_once_and_module_without_rules(self):
+        files = {**HARNESS, "meta/product/stack.md": STACK_SET,
+                 "src/modules/billing/_about.md": "- `pay`\n"}
+        code, out, _ = self.run_packet(files, "--rules")
+        self.assertEqual(code, 0)
+        self.assertTrue(out.startswith("# Packet: rules\n"))
+        self.assertIn("meta/core/defaults/architecture.md:2: rule A", out)
+        self.assertIn("meta/product/practices/review.md:1: # Review rules", out)
+        self.assertNotIn("billing", out)
+        code, out, _ = self.run_packet(files, "billing", "--no-rules")
+        self.assertEqual(code, 0)
+        self.assertNotIn("rule A", out)
+        self.assertNotIn("stack.md", out)
+        self.assertIn("src/modules/billing/_about.md:1: - `pay`", out)
+        self.assertEqual(self.run_packet(files, "billing", "--rules")[0], 1)
+        self.assertEqual(self.run_packet(files, "--bogus")[0], 1)
+        self.assertEqual(self.run_packet({**HARNESS, "meta/product/stack.md": STACK_TBD}, "--rules")[0], 1)
+
     def test_new_slice_is_a_note(self):
         files = {**HARNESS, "meta/product/stack.md": STACK_SET,
                  "src/_about.md": "x\n", "src/modules/billing/_about.md": "x\n"}

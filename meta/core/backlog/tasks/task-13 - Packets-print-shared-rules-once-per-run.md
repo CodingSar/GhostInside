@@ -1,9 +1,11 @@
 ---
 id: TASK-13
 title: Packets print shared rules once per run
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-10-16 20:30'
+updated_date: '2026-10-16 20:38'
 labels: []
 dependencies: []
 ordinal: 4000
@@ -22,3 +24,9 @@ packet.py prints architecture, persistence, stack, and review rules in every mod
 - [ ] #3 loop.py writes packets/rules.md once per run and one module packet per module without the rules, and frames list rules.md first
 - [ ] #4 test_packet.py and test_loop.py cover both modes
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. packet.py: --rules prints only rules sections; --no-rules skips them. 2. loop.py packets(): rules.md once per run, module packets without rules, rules first in the list. 3. Tests in test_packet.py and test_loop.py.
+<!-- SECTION:PLAN:END -->

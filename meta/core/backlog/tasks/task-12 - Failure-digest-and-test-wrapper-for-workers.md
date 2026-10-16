@@ -1,11 +1,11 @@
 ---
 id: TASK-12
 title: Failure digest and test wrapper for workers
-status: In Progress
+status: Done
 assignee:
   - '@claude'
 created_date: '2026-10-16 20:30'
-updated_date: '2026-10-16 20:36'
+updated_date: '2026-10-16 20:38'
 labels: []
 dependencies: []
 ordinal: 3000
@@ -19,11 +19,11 @@ A relaunch after a failed step or red gate hands the worker a raw log path; the 
 
 ## Acceptance Criteria
 <!-- AC:BEGIN -->
-- [ ] #1 loop.py has a digest of a test run: pass and fail counts from the JUnit report, one line per failing test with its first message line, else the last 10 output lines, at most 20 lines
-- [ ] #2 A relaunch after a failed step or red gate restates the step and includes the digest inline, not only the log path
-- [ ] #3 python3 -I meta/core/tools/loop.py test <command> runs the command, writes the full output under the run logs, and prints the digest with exit code 0 on green and 1 otherwise
-- [ ] #4 implement.md tells the implementer to run tests only through loop.py test
-- [ ] #5 test_loop.py covers the digest and the test command
+- [x] #1 loop.py has a digest of a test run: pass and fail counts from the JUnit report, one line per failing test with its first message line, else the last 10 output lines, at most 20 lines
+- [x] #2 A relaunch after a failed step or red gate restates the step and includes the digest inline, not only the log path
+- [x] #3 python3 -I meta/core/tools/loop.py test <command> runs the command, writes the full output under the run logs, and prints the digest with exit code 0 on green and 1 otherwise
+- [x] #4 implement.md tells the implementer to run tests only through loop.py test
+- [x] #5 test_loop.py covers the digest and the test command
 <!-- AC:END -->
 
 ## Implementation Plan
@@ -31,3 +31,15 @@ A relaunch after a failed step or red gate hands the worker a raw log path; the 
 <!-- SECTION:PLAN:BEGIN -->
 1. digest(sv, output, results) in loop.py: pass/fail counts, one line per failing test, else last 10 lines, max 20 lines. 2. done_step and done_red relaunch reasons restate the step and include the digest. 3. loop.py test <cmd>: runs in the run logs, prints digest, exit 0/1. 4. implement.md uses loop.py test. 5. Tests.
 <!-- SECTION:PLAN:END -->
+
+## Implementation Notes
+
+<!-- SECTION:NOTES:BEGIN -->
+test_loop.py 19 tests green (digest cap, test command exit codes, relaunch text); check-harness.sh ok.
+<!-- SECTION:NOTES:END -->
+
+## Final Summary
+
+<!-- SECTION:FINAL_SUMMARY:BEGIN -->
+Added digest() and run_tests() to loop.py, loop.py test <command> for workers, relaunch bodies for failed steps and red gates restate the job and carry the digest; implement.md section 3 uses the wrapper. Verified by test_loop.py (test_failed_step_relaunch_carries_a_digest, test_the_test_command_prints_a_digest_and_keeps_the_log) and check-harness.sh. HD-20.
+<!-- SECTION:FINAL_SUMMARY:END -->

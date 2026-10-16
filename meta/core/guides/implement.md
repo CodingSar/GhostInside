@@ -16,7 +16,7 @@ If `meta/product/overlays/implement.md` exists, read it next. It adds stack
 specifics: idioms, the migration command, the linter's fix mode, and review
 rules it carries verbatim. It never relaxes a forbidden item.
 
-The packets hold the architecture, the stack, and the review rules. Follow
+The first packet, `rules.md`, holds the architecture, the stack, and the review rules; the others hold one module each. Follow
 them in the code you write. A review rule that conflicts with a test is a
 deviation.
 
