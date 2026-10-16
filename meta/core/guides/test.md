@@ -100,6 +100,13 @@ they are. A finding you cannot fix that way: report it as blocked.
 
 ## 9. Finish
 
+Before the output file, confirm each line:
+
+- one test per criterion, named `<task>#<n>`, with the criterion's literals;
+- every test calls a stub that raises not-implemented, so it fails now;
+- every stub has typed inputs and outputs and no logic;
+- every `Retire:` and `Change:` line is applied, nothing else touched.
+
 Write your output file: `tests=<count> stubs=<count> retired=<count>`, the
 files you wrote, and any notes the sections above ask for. Never run the
 tests; `loop.py` runs the red gate.

@@ -400,6 +400,11 @@ class LoopTest(unittest.TestCase):
         with self.assertRaises(ValueError) as e:
             m.parse_plan(bad.replace("Criteria: 2", "Criteria: none"), 2, sv)
         self.assertIn("criteria not covered by any step: 2", str(e.exception))
+        wide = PLAN.format(targeted="pytest").replace("Files: src/modules/billing/slices/pay/handler.py",
+                                                      "Files: " + ", ".join(f"src/modules/billing/f{i}.py" for i in range(5)))
+        with self.assertRaises(ValueError) as e:
+            m.parse_plan(wide, 2, sv)
+        self.assertIn("step 1: 5 files, at most 4 per step; split it", str(e.exception))
 
     def test_an_agent_commit_stops_the_run(self):
         r = self.r

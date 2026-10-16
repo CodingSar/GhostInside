@@ -54,6 +54,13 @@ Read the digest, open the log only for a failure the digest does not explain,
 and fix inside the allowlist. You have the iteration budget from the frame.
 When it runs out, stop and report the digest's first line.
 
+Before you report done, run the wrapper once more and read the digest: a
+step is done when the digest's first line says PASS, not when the code looks
+right. Make the tests pass by making the code correct; a change that makes a
+test pass without making the behaviour right (a hard-coded expected value, a
+special case for the test's input, a weakened check) is a deviation, not a
+fix.
+
 ## 4. Stop and report (deviation or blocked)
 
 Stop at once when:
@@ -76,6 +83,14 @@ Do not work around it. Report the exact error or conflict.
 - Skipping, disabling, or weakening a test.
 
 ## 6. Finish
+
+Before the output file, confirm each line:
+
+- the last digest's first line is PASS;
+- every changed file is on the "Edit only" list;
+- no test file changed, no signature changed, no dependency added;
+- the code imports other modules only through `index` and tables only through
+  `store`.
 
 Write your output file: the changed files and the first line of the last
 digest. `loop.py` runs the targeted tests again and checks the allowlist.

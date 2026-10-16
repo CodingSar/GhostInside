@@ -57,7 +57,8 @@ GUIDES = {
 }
 CALLS = {"intake": ["researcher"], "planner": ["researcher"]}  # allowed edges
 ASKERS = {"intake", "planner"}
-MAX_DEPTH = 3          # frames in one chain, caller included
+MAX_DEPTH = 3
+STEP_FILES = 4  # files per plan step; small models finish short steps (HD-23)          # frames in one chain, caller included
 STOP_BLOCKS = 3        # times the Stop hook holds the main thread before letting go
 BUDGET = 2             # implementer iterations
 STACK_KEYS = {
@@ -312,6 +313,8 @@ def parse_plan(text, n_criteria, sv):
             errors.append(f"step {s['n']}: steps must be numbered 1, 2, 3, ...")
         if not s["files"]:
             errors.append(f"step {s['n']}: no Files line")
+        elif len(s["files"]) > STEP_FILES:
+            errors.append(f"step {s['n']}: {len(s['files'])} files, at most {STEP_FILES} per step; split it")
         for f in s["files"]:
             if f.startswith(("/", "meta/", ".claude/", "backlog/", SCRATCH)) or ".." in f.split("/"):
                 errors.append(f"step {s['n']}: file not allowed: {f}")

@@ -16,7 +16,10 @@ command. You write the plan, not code or tests.
 
 ## 2. Shape the steps
 
-- Numbered steps, about ten at most. Each covers one or more criteria.
+- Numbered steps, about ten at most. Each covers one criterion when it can,
+  and at most four files. `loop.py` rejects a wider step. A short step is
+  one an implementer finishes in a few edits and one test run; split by
+  slice, then by criterion.
 - Follow the architecture in the packet: one slice per use case, tables only
   through the module's `store`, other modules only through their `index`. A
   new module's first step adds its migration and `store`.

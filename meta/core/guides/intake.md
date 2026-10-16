@@ -70,6 +70,13 @@ research question: write it to the call file and return
 
 ## 6. Output
 
+Before the output file, confirm each line:
+
+- every criterion is `GIVEN / WHEN / THEN`, testable through one action;
+- every criterion traces to the user's words or carries a source tag;
+- no `ASSUMED:` prefix is left;
+- the task has a `module:` label per module touched.
+
 Your output file starts with `task: <id>`, then one line per criterion:
 `<n>: <source>`. Final line: `RETURN ok <output file>`, or
 `RETURN blocked <reason>` when the request cannot become a task (say why).
