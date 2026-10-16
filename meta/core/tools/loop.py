@@ -29,6 +29,8 @@ Usage:
   loop.py status
   loop.py retry      after a STOP the user has resolved
   loop.py abandon
+  loop.py test "<command>"    run a test command for the pending frame: full output to
+                              the run logs, a digest on stdout, exit 0 when green
   loop.py hook-stop | hook-subagent-stop    hooks; read the hook JSON on stdin
 
 Python standard library only. This is harness tooling, not the product stack.
@@ -422,12 +424,40 @@ def crit_re(task, k=None):
     return re.compile(rf"TASK[-_]{num}(?:#|_){k}(?!\d)")
 
 
-def full_tests(st, sv, name):
+DIGEST_LINES = 20
+
+
+def run_tests(st, sv, cmd, name):
+    """Run a test command. (code, results, log path, digest); results from a fresh JUnit report."""
     report = ROOT / sv["report"]
     if report.exists():
         report.unlink()
-    code, _, path = sh(st, sv["full"], name)
-    return code, junit(sv), path
+    code, output, path = sh(st, cmd, name)
+    results = junit(sv)
+    return code, results, path, digest(code, output, results, path)
+
+
+def full_tests(st, sv, name):
+    return run_tests(st, sv, sv["full"], name)[:3]
+
+
+def digest(code, output, results, log_path):
+    """At most DIGEST_LINES lines: the verdict and counts, one line per failing test (its first
+    message line), or the last 10 output lines when there is no report, and the log path."""
+    if results is None:
+        tail = [l for l in output.splitlines() if l.strip()][-10:]
+        lines = [f"{'PASS' if code == 0 else 'FAIL'} (exit {code}, no JUnit report); last output lines:",
+                 *[f"  {l[:200]}" for l in tail]]
+    else:
+        bad = [(n, s, m) for n, s, m in results if s not in ("pass", "skip")]
+        verdict = "PASS" if code == 0 and not bad else "FAIL"
+        lines = [f"{verdict}: {len(results) - len(bad)} of {len(results)} tests pass, {len(bad)} fail"
+                 + (f" (exit {code})" if code and not bad else "")]
+        room = DIGEST_LINES - 3
+        lines += [f"- {n}: {s} {m}".rstrip()[:200] for n, s, m in bad[:room]]
+        if len(bad) > room:
+            lines.append(f"- ... and {len(bad) - room} more")
+    return "\n".join(lines + [f"Full output: `{log_path}`"])
 
 
 def red_gate(task, n_criteria, results):
@@ -546,15 +576,20 @@ def done_red(st, sv, fr):
         if entry not in text:
             p.parent.mkdir(parents=True, exist_ok=True)
             p.write_text(text + ("" if not text or text.endswith("\n") else "\n") + entry + "\n")
-    _, results, log_path = full_tests(st, sv, "red")
+    _, results, log_path, dg = run_tests(st, sv, sv["full"], "red")
     errors = red_gate(st["task"], len(criteria(st["task"])), results)
     if errors:
         report = run_dir(st) / "logs" / "red-gate.txt"
         report.write_text("\n".join(errors) + "\n")
         git("checkout", "--", ".")
         git("clean", "-fdq", "--", sv["src"])
-        return relaunch_once(st, fr, "red", f"The red gate failed; your changes were discarded. Gate report: "
-                                            f"`{report.relative_to(ROOT)}`. Test output: `{log_path}`.")
+        shown = errors[:DIGEST_LINES - 3] + ([f"... and {len(errors) - DIGEST_LINES + 3} more"]
+                                             if len(errors) > DIGEST_LINES - 3 else [])
+        return relaunch_once(st, fr, "red", "\n".join([
+            f"Write the failing tests and stubs for {st['task']} again. The red gate failed and your changes "
+            f"were discarded. Every criterion needs one failing test named {st['task']}#k; every other test "
+            f"stays green.", "", "Gate findings:", *[f"- {e}" for e in shown], "",
+            f"Gate report: `{report.relative_to(ROOT)}`", dg]))
     commit(st, f"{st['task']}: failing tests and stubs")
     backlog("task", "edit", st["task"], "--append-notes", "red gate: ok")
     st["phase"], st["step"] = "step", 0
@@ -582,12 +617,14 @@ def enter_step(st, sv):
 def done_step(st, sv, fr):
     s = st["plan"]["steps"][st["step"]]
     check_allowlist(st, lambda p: p in s["files"], f"step {s['n']}")
-    code, _, log_path = sh(st, s["test"], f"step-{s['n']}")
+    code, _, _, dg = run_tests(st, sv, s["test"], f"step-{s['n']}")
     if code:
         git("checkout", "--", ".")
         git("clean", "-fdq", "--", sv["src"])
-        return relaunch_once(st, fr, f"step-{s['n']}", f"Your targeted tests still failed and your changes were "
-                                                         f"discarded. Test output: `{log_path}`.")
+        texts = dict(criteria(st["task"]))
+        return relaunch_once(st, fr, f"step-{s['n']}", "\n".join([
+            f"Step {s['n']}: {s['title']}, again. Your targeted tests still failed and your changes were "
+            f"discarded. Make these pass:", *[f"{k}. {texts[k]}" for k in s["criteria"]], "", dg]))
     backlog("task", "edit", st["task"], "--append-notes", f"step {s['n']}: ok")
     commit(st, f"{st['task']}: step {s['n']} {s['title']}"[:72])
     st["step"] += 1
@@ -851,6 +888,20 @@ def cmd_done(text):
     return 0
 
 
+def cmd_test(cmd):
+    """Run a test command for the pending frame (the worker calls this): digest out, full log kept."""
+    run = current_run()
+    if not run:
+        print("ERROR no pending run")
+        return 1
+    st, sv = load(run), stack_values()
+    n = st["pending"]["n"] if st.get("pending") else 0
+    k = len(list((run_dir(st) / "logs").glob(f"test-{n:02d}-*.txt"))) + 1 if (run_dir(st) / "logs").is_dir() else 1
+    code, results, _, dg = run_tests(st, sv, cmd, f"test-{n:02d}-{k}")
+    print(dg)
+    return 0 if code == 0 and results is not None and all(s in ("pass", "skip") for _, s, _ in results) else 1
+
+
 def cmd_status():
     run = current_run()
     if not run:
@@ -945,12 +996,15 @@ def main(argv):
             return cmd_start(rest[0])
         if cmd == "done" and len(rest) == 1:
             return cmd_done(rest[0])
+        if cmd == "test" and len(rest) == 1:
+            return cmd_test(rest[0])
         if cmd in simple and not rest:
             return simple[cmd]()
     except Stop as e:
         print(f"STOP {e}")
         return 1
-    print("ERROR usage: loop.py start <TASK-n|request file> | next | done \"<RETURN line>\" | status | retry | abandon")
+    print("ERROR usage: loop.py start <TASK-n|request file> | next | done \"<RETURN line>\" | test \"<command>\" "
+          "| status | retry | abandon")
     return 1
 
 

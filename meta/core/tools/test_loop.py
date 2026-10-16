@@ -295,6 +295,8 @@ class LoopTest(unittest.TestCase):
         agent, text, _ = r.frame(line)
         self.assertEqual(agent, "test-writer")
         self.assertIn("red gate failed", text)
+        self.assertIn("- t TASK-1#1 paid: pass, expected a failing test", text)
+        self.assertIn("Write the failing tests and stubs for TASK-1 again", text)
         self.assertFalse((r.root / "src/modules/billing/slices/pay/handler.py").exists())
         gate = (r.root / ".scratch/run-1/logs/red-gate.txt").read_text()
         self.assertIn("TASK-1#1 paid: pass, expected a failing test", gate)
@@ -319,6 +321,46 @@ class LoopTest(unittest.TestCase):
         self.assertEqual(line, "STOP step 1 changed files outside its allowlist: src/shared/util.py")
         code, out, _ = r.loop("retry")
         self.assertTrue(out.startswith("STOP the working tree is not clean"), out)
+
+    def test_failed_step_relaunch_carries_a_digest(self):
+        r = self.r
+        line = r.to_red()
+        r.write_tests({"TASK-1#1 paid": "fail", "TASK-1#2 twice": "fail"})
+        line = r.ok(line)
+        r.files({"src/modules/billing/slices/pay/handler.py": "def pay(order): return 'paid'\n"})
+        r.fake(targeted=1, tests={"TASK-1#1 paid": "pass", "TASK-1#2 twice": "fail"})
+        line = r.ok(line)
+        agent, text, _ = r.frame(line)
+        self.assertEqual(agent, "implementer")
+        self.assertIn("Step 1: Pay an order, again.", text)
+        self.assertIn("2. GIVEN a paid order WHEN paid again THEN rejected", text)
+        self.assertIn("FAIL (exit 1, no JUnit report)", text)
+        self.assertIn("Full output: `.scratch/run-1/logs/step-1.txt`", text)
+
+    def test_the_test_command_prints_a_digest_and_keeps_the_log(self):
+        r = self.r
+        line = r.to_red()
+        r.write_tests({"TASK-1#1 paid": "fail", "TASK-1#2 twice": "fail"})
+        line = r.ok(line)
+        r.fake(tests={"TASK-1#1 paid": "pass", "TASK-1#2 twice": "fail", "old": "pass"})
+        code, out, _ = r.loop("test", f"python3 {r.bin / 'fake.py'} full")
+        self.assertEqual(code, 1)
+        self.assertEqual(out.split("\n")[0], "FAIL: 2 of 3 tests pass, 1 fail")
+        self.assertIn("- t TASK-1#2 twice: fail NotImplementedError", out)
+        self.assertTrue(out.endswith("Full output: `.scratch/run-1/logs/test-04-1.txt`"), out)
+        self.assertIn("$ python3", (r.root / ".scratch/run-1/logs/test-04-1.txt").read_text())
+        r.fake(tests={"TASK-1#1 paid": "pass", "TASK-1#2 twice": "pass"})
+        code, out, _ = r.loop("test", f"python3 {r.bin / 'fake.py'} full")
+        self.assertEqual((code, out.split("\n")[0]), (0, "PASS: 2 of 2 tests pass, 0 fail"))
+        self.assertTrue(out.endswith("test-04-2.txt`"), out)
+        code, out, _ = r.loop("test", "echo hi; echo there; exit 3")
+        self.assertEqual(code, 1)
+        self.assertIn("FAIL (exit 3, no JUnit report); last output lines:\n  hi\n  there", out)
+        mod = load_module(r.root)
+        many = [(f"t{i}", "fail", "boom") for i in range(30)]
+        lines = mod.digest(1, "", many, "x.txt").split("\n")
+        self.assertEqual(len(lines), mod.DIGEST_LINES)
+        self.assertEqual(lines[-2], "- ... and 13 more")
 
     def test_plan_parsing(self):
         m = load_module(self.r.root)

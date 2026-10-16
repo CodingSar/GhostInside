@@ -42,9 +42,17 @@ targeted tests.
 
 ## 3. Check
 
-Run the targeted test command. Fix failures inside the allowlist. You have the
-iteration budget from the frame. When it runs out, stop and report the last
-failing output line.
+Run the targeted test command only through the wrapper, which keeps the full
+output in the run's logs and prints a digest: the counts, one line per
+failing test, and the log path:
+
+```
+python3 -I meta/core/tools/loop.py test "<targeted test command>"
+```
+
+Read the digest, open the log only for a failure the digest does not explain,
+and fix inside the allowlist. You have the iteration budget from the frame.
+When it runs out, stop and report the digest's first line.
 
 ## 4. Stop and report (deviation or blocked)
 
@@ -69,8 +77,8 @@ Do not work around it. Report the exact error or conflict.
 
 ## 6. Finish
 
-Write your output file: the changed files and the last line of the test
-output. `loop.py` runs the targeted tests again and checks the allowlist.
+Write your output file: the changed files and the first line of the last
+digest. `loop.py` runs the targeted tests again and checks the allowlist.
 
 Final line, exactly one of: `RETURN ok <output file>`,
 `RETURN deviation <reason>` (section 4), or `RETURN blocked <reason>`
