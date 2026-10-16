@@ -71,7 +71,8 @@ checker enforce them on every task.
 ## Where probability is used, and where it is not
 
 - Deterministic: the task state machine in `loop.py`, the packet, file
-  allowlists, status values, the red gate from the JUnit report, the
+  allowlists (the guard hook rejects a write outside the pending frame's
+  list at write time, HD-19), status values, the red gate from the JUnit report, the
   `RETURN` lines, the frame stack, the check command, the harness checks, the guard
   hook, the stop rules.
 - Probabilistic: the code inside a stub, helper names, how a test is

@@ -14,7 +14,11 @@ Blocked for subagents only (the hook input carries `agent_type`):
   - Edit, Write, and NotebookEdit on harness files (`.claude/`, `meta/` except
     `meta/product/screens/`, `AGENTS.md`, `CLAUDE.md`, `.git/`), on the loop's
     state (`.scratch/current`, `.scratch/<run>/state.json`, `log.md`), and
-    outside the project.
+    outside the project;
+  - Edit, Write, and NotebookEdit outside the write allowlist of the pending
+    loop frame (`allow` in `.scratch/<run>/state.json`: exact paths, or
+    prefixes ending in `/`), when the frame has one. The frame's own output,
+    call, and ask files are always allowed.
 
 Also checked: commands on separate lines, after shell keywords (if, then, do,
 {, !), behind wrappers (env, timeout, nice, xargs, ...), inside `bash -c` (any
@@ -204,6 +208,31 @@ def check_path(path, cwd):
     return f"write to a harness or loop-state file ({rel})" if PROTECTED.match(rel) else None
 
 
+def pending_allow(root):
+    """(allow list, own files) of the pending loop frame, or (None, ()) when none has a list."""
+    try:
+        run = (root / ".scratch" / "current").read_text().strip()
+        fr = json.loads((root / ".scratch" / run / "state.json").read_text()).get("pending") or {}
+    except (OSError, ValueError):
+        return None, ()
+    return fr.get("allow"), tuple(fr.get(k) for k in ("out", "call", "ask") if fr.get(k))
+
+
+def check_allow(path, cwd):
+    """The reason the pending frame's allowlist rejects a subagent write to path, or None."""
+    root = Path(cwd or ".").resolve()
+    allow, own = pending_allow(root)
+    if allow is None:
+        return None
+    try:
+        rel = (root / path).resolve().relative_to(root).as_posix()
+    except ValueError:
+        return None
+    if rel in own or any(rel == a or (a.endswith("/") and rel.startswith(a)) for a in allow):
+        return None
+    return f"write outside this job's allowlist ({rel}); edit only: {', '.join(allow)}"
+
+
 def main():
     try:
         event = json.load(sys.stdin)
@@ -213,7 +242,8 @@ def main():
     tool_input = event.get("tool_input") or {}
     if event.get("tool_name") in ("Edit", "Write", "NotebookEdit"):
         path = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
-        reason = check_path(path, event.get("cwd")) if agent and path else None
+        cwd = event.get("cwd")
+        reason = (check_path(path, cwd) or check_allow(path, cwd)) if agent and path else None
     else:
         reason = check(tool_input.get("command") or "", agent=agent)
     if reason:

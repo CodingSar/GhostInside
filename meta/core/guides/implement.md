@@ -6,9 +6,11 @@ tests depend on.
 
 ## 1. Read
 
-From your frame: the step text, the criteria it covers, the exact file
-allowlist, the targeted test command, the packet files, and your iteration
-budget. A job that starts with `tidy:` is a tidy run (section 2).
+From your frame: the step text, the criteria it covers, the targeted test
+command, the packet files, your iteration budget, and the "Edit only" list:
+the file allowlist. The guard hook rejects a write to any other file; a
+rejection means the step needs a file the plan did not give it (section 5).
+A job that starts with `tidy:` is a tidy run (section 2).
 
 If `meta/product/overlays/implement.md` exists, read it next. It adds stack
 specifics: idioms, the migration command, the linter's fix mode, and review

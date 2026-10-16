@@ -4,6 +4,7 @@
 import json
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -165,6 +166,42 @@ class GuardTest(unittest.TestCase):
         self.assertEqual(run("Edit", ".claude/settings.json"), 0)
         self.assertEqual(run("Edit", ".claude/settings.json", agent_type="implementer"), 2)
         self.assertEqual(run("Write", "src/a.py", agent_type="implementer"), 0)
+
+    def test_pending_frame_allowlist(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / ".scratch/run-1").mkdir(parents=True)
+            (root / ".scratch/current").write_text("run-1\n")
+            fr = {"agent": "implementer", "out": ".scratch/run-1/frames/03-implementer.out.md",
+                  "call": ".scratch/run-1/frames/03-implementer.call.md", "ask": None,
+                  "allow": ["src/modules/a/slices/b/handler.py", "backlog/"]}
+            state = root / ".scratch/run-1/state.json"
+            state.write_text(json.dumps({"pending": fr}))
+            for path in ("src/modules/a/slices/b/handler.py", "backlog/tasks/x.md", str(root / "backlog/y.md"),
+                         ".scratch/run-1/frames/03-implementer.out.md", ".scratch/run-1/frames/03-implementer.call.md"):
+                with self.subTest(path=path):
+                    self.assertIsNone(guard.check_allow(path, tmp))
+            for path in ("src/modules/a/slices/b/test_b.py", "src/modules/a/slices/b/handler.pyx", "README.md",
+                         ".scratch/run-1/frames/02-planner.out.md"):
+                with self.subTest(path=path):
+                    reason = guard.check_allow(path, tmp)
+                    self.assertIsNotNone(reason)
+                    self.assertIn("src/modules/a/slices/b/handler.py, backlog/", reason)
+            fr["allow"] = None
+            state.write_text(json.dumps({"pending": fr}))
+            self.assertIsNone(guard.check_allow("README.md", tmp))
+            event = {"tool_name": "Write", "tool_input": {"file_path": "README.md"}, "cwd": tmp,
+                     "agent_type": "implementer"}
+            self.assertEqual(subprocess.run([sys.executable, "-I", str(SCRIPT)], input=json.dumps(event),
+                                            capture_output=True, text=True).returncode, 0)
+            fr["allow"] = ["src/"]
+            state.write_text(json.dumps({"pending": fr}))
+            out = subprocess.run([sys.executable, "-I", str(SCRIPT)], input=json.dumps(event),
+                                 capture_output=True, text=True)
+            self.assertEqual(out.returncode, 2)
+            self.assertIn("edit only: src/", out.stderr)
+            (root / ".scratch/current").unlink()
+            self.assertIsNone(guard.check_allow("README.md", tmp))
 
 
 if __name__ == "__main__":

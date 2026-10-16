@@ -93,7 +93,7 @@ no defaults, no constants that encode rules.
 
 ## 8. Tidy run
 
-The job lists check findings in test files and the allowlist of those files. Fix only those: split long
+The job lists check findings in test files; the frame's "Edit only" list is those files. Fix only those: split long
 tests, move repeated arrange code into fixtures in the same file, apply the
 lint rule named. Test names, literal values, and assertions stay exactly as
 they are. A finding you cannot fix that way: report it as blocked.

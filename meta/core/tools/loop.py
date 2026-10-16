@@ -223,19 +223,24 @@ def frame_text(st, fr, body):
         lines.append(f"- To ask the user: write the questions to `{fr['ask']}`.")
         returns.append(f"RETURN ask {fr['ask']}")
     returns += ["RETURN deviation <reason>", "RETURN blocked <reason>"]
+    if fr.get("allow"):
+        lines += ["", "## Edit only", "", "The guard hook rejects a write anywhere else:", "",
+                  *[f"- `{a}`" for a in fr["allow"]]]
     lines += ["", "## Last line", "",
               "Your reply ends with exactly one of these lines, with nothing after it:", "",
               "```", *returns, "```", ""]
     return "\n".join(lines)
 
 
-def launch(st, agent, body, job=None, retry_of=None):
+def launch(st, agent, body, job=None, retry_of=None, allow=None):
+    """allow: the paths (or prefixes ending in /) the agent may write, enforced by guard.py
+    at write time; None leaves only the harness protection."""
     st["seq"] += 1
     n = st["seq"]
     base = f"{SCRATCH}/{st['run']}/frames/{n:02d}-{agent}"
     fr = {"kind": "launch", "n": n, "agent": agent, "in": base + ".in.md", "out": base + ".out.md",
           "call": base + ".call.md", "ask": base + ".ask.md", "job": job or base + ".in.md",
-          "retry_of": retry_of or n, "head": git("rev-parse", "HEAD").strip()}
+          "retry_of": retry_of or n, "head": git("rev-parse", "HEAD").strip(), "allow": allow}
     (ROOT / base).parent.mkdir(parents=True, exist_ok=True)
     (ROOT / fr["in"]).write_text(frame_text(st, fr, body))
     st["pending"] = fr
@@ -246,7 +251,7 @@ def relaunch(st, fr, reason):
     """Launch the same job again, once, with the reason it was rejected."""
     launch(st, fr["agent"], f"Do the job in `{fr['job']}` again; write to the files of this frame, "
                             f"not that one's.\n\n{reason}",
-           job=fr["job"], retry_of=fr["retry_of"])
+           job=fr["job"], retry_of=fr["retry_of"], allow=fr.get("allow"))
 
 
 def resume(st, caller, result):
@@ -258,7 +263,7 @@ def resume(st, caller, result):
     body = (f"You stopped to {'ask the user' if asked else 'call ' + who}. Continue the same job; write to "
             f"the files of this frame, not the earlier ones.\n\n"
             f"- The job: `{caller['job']}`{out}\n- Your request: `{req}`\n- The answer from {who}: `{result}`")
-    launch(st, caller["agent"], body, job=caller["job"])
+    launch(st, caller["agent"], body, job=caller["job"], allow=caller.get("allow"))
 
 
 # ---------- the plan ----------
@@ -369,6 +374,16 @@ def task_allowed(st, sv, path):
             if re.search(sv["tests"], name) or name.split(".")[0] == stems[0]:
                 return True
     return False
+
+
+def red_allow(st, sv):
+    """Write allowlist of the test-writer: Backlog, screens, the plan's modules, catalogs, retired files."""
+    plan = st["plan"]
+    paths = ["backlog/", "meta/product/screens/"]
+    paths += [f"{sv['src']}/modules/{m}/" for m, _ in plan_modules(st, sv)]
+    paths += [c[0] for c in plan["catalogs"]] + list(plan["retired_files"])
+    paths += [f for s in plan["steps"] for f in s["files"]]
+    return list(dict.fromkeys(paths))
 
 
 # ---------- test reports ----------
@@ -519,7 +534,7 @@ def enter_red(st, sv):
         "Retire lines:", *([f"- {r}" for r in plan["retire"]] or ["- none"]), "",
         "Change lines:", *([f"- {c}" for c in plan["change"]] or ["- none"]), "",
         f"Full test command: `{sv['full']}`"])
-    launch(st, "test-writer", body)
+    launch(st, "test-writer", body, allow=red_allow(st, sv))
 
 
 def done_red(st, sv, fr):
@@ -550,7 +565,6 @@ def step_body(st, sv, s, crit):
     return "\n".join([
         f"Step {s['n']}: {s['title']}", "", "Criteria:",
         *([f"{k}. {texts[k]}" for k in s["criteria"]] or ["none (wiring step)"]), "",
-        "Allowlist (the only files you may change):", *[f"- {f}" for f in s["files"]], "",
         f"Targeted test command: `{s['test']}`", "",
         "Packets (read them):", *[f"- `{p}`" for p in packets(st, sv)], "",
         f"Iteration budget: {BUDGET}"])
@@ -561,7 +575,8 @@ def enter_step(st, sv):
     if st["step"] >= len(steps):
         st["phase"] = "tidy"
         return
-    launch(st, "implementer", step_body(st, sv, steps[st["step"]], criteria(st["task"])))
+    s = steps[st["step"]]
+    launch(st, "implementer", step_body(st, sv, s, criteria(st["task"])), allow=s["files"])
 
 
 def done_step(st, sv, fr):
@@ -600,10 +615,8 @@ def findings(output, st, sv):
 def enter_tidy(st, sv):
     if st["tidy_queue"]:
         agent, paths, lines = st["tidy_queue"][0]
-        body = "\n".join(["tidy: " + lines[0], *lines[1:40], "",
-                          "Allowlist (the only files you may change):", *[f"- {p}" for p in paths], "",
-                          f"Test command: `{sv['full']}`"])
-        return launch(st, agent, body)
+        body = "\n".join(["tidy: " + lines[0], *lines[1:40], "", f"Test command: `{sv['full']}`"])
+        return launch(st, agent, body, allow=paths)
     sh(st, sv["fix"], "tidy-fix")
     code, output, log_path = sh(st, sv["check"], f"check-{'2' if st['tidied'] else '1'}")
     if code == 0:
