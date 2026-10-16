@@ -1,9 +1,11 @@
 ---
 id: TASK-14
 title: 'Run metrics: timestamps and loop.py report'
-status: To Do
-assignee: []
+status: In Progress
+assignee:
+  - '@claude'
 created_date: '2026-10-16 20:30'
+updated_date: '2026-10-16 20:40'
 labels: []
 dependencies: []
 ordinal: 5000
@@ -22,3 +24,9 @@ design.md promises factory-level evaluation (first-pass green, files outside the
 - [ ] #3 loop.py report --all prints one line per run under .scratch with the same numbers
 - [ ] #4 test_loop.py covers the report
 <!-- AC:END -->
+
+## Implementation Plan
+
+<!-- SECTION:PLAN:BEGIN -->
+1. log() prefixes ISO timestamps; launches log frame bytes. 2. report(st) computes task, outcome, elapsed, launches per agent, relaunches, stops, first-try steps, tidy runs, frame bytes. 3. loop.py report and report --all. 4. Tests.
+<!-- SECTION:PLAN:END -->

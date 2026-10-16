@@ -87,5 +87,6 @@ are the acceptance evidence for each task. Factory-level
 evaluation is separate: run the same small tasks through the factory and
 record how often the first pass is green, how many files fall outside the
 plan, how many retries and tidy runs a task needs, and how large the
-orchestrator's context gets. Fixtures are Backlog tasks with known outcomes,
-so runs are comparable.
+frames get. `loop.py report` prints these for a run, `--all` for every run,
+from the timestamped `log.md` (HD-22). Fixtures are Backlog tasks with known
+outcomes, so runs are comparable.

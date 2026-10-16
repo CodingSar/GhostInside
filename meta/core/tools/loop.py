@@ -29,6 +29,7 @@ Usage:
   loop.py status
   loop.py retry      after a STOP the user has resolved
   loop.py abandon
+  loop.py report [--all]      metrics of the current run (or one line per run)
   loop.py test "<command>"    run a test command for the pending frame: full output to
                               the run logs, a digest on stdout, exit 0 when green
   loop.py hook-stop | hook-subagent-stop    hooks; read the hook JSON on stdin
@@ -42,6 +43,7 @@ import re
 import subprocess
 import sys
 import xml.etree.ElementTree as ET
+from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(os.environ.get("GHOSTINSIDE_ROOT", Path(__file__).resolve().parents[3]))
@@ -99,8 +101,9 @@ def save(st):
 
 
 def log(st, line):
+    stamp = datetime.now(timezone.utc).isoformat(timespec="seconds")
     with open(run_dir(st) / "log.md", "a") as f:
-        f.write(line.rstrip() + "\n")
+        f.write(f"{stamp} {line.rstrip()}\n")
 
 
 def first_line(text):
@@ -244,9 +247,10 @@ def launch(st, agent, body, job=None, retry_of=None, allow=None):
           "call": base + ".call.md", "ask": base + ".ask.md", "job": job or base + ".in.md",
           "retry_of": retry_of or n, "head": git("rev-parse", "HEAD").strip(), "allow": allow}
     (ROOT / base).parent.mkdir(parents=True, exist_ok=True)
-    (ROOT / fr["in"]).write_text(frame_text(st, fr, body))
+    text = frame_text(st, fr, body)
+    (ROOT / fr["in"]).write_text(text)
     st["pending"] = fr
-    log(st, f"launch {n:02d} {agent}")
+    log(st, f"launch {n:02d} {agent} {len(text.encode())}b")
 
 
 def relaunch(st, fr, reason):
@@ -658,6 +662,7 @@ def enter_tidy(st, sv):
     if st["tidy_queue"]:
         agent, paths, lines = st["tidy_queue"][0]
         body = "\n".join(["tidy: " + lines[0], *lines[1:40], "", f"Test command: `{sv['full']}`"])
+        log(st, f"tidy {agent}")
         return launch(st, agent, body, allow=paths)
     sh(st, sv["fix"], "tidy-fix")
     code, output, log_path = sh(st, sv["check"], f"check-{'2' if st['tidied'] else '1'}")
@@ -751,6 +756,7 @@ def relaunch_once(st, fr, key, reason):
     st["retries"][key] = st["retries"].get(key, 0) + 1
     if st["retries"][key] > 1:
         raise Stop(f"{fr['agent']} failed twice ({key}): {first_line(reason)}")
+    log(st, f"relaunch {key}")
     relaunch(st, fr, reason)
 
 
@@ -907,6 +913,58 @@ def cmd_test(cmd):
     return 0 if code == 0 and results is not None and all(s in ("pass", "skip") for _, s, _ in results) else 1
 
 
+LOG_LINE = re.compile(r"^(\S+) (\S+) ?(.*)$")
+
+
+def report(run):
+    """Metrics of one run from its log.md and state.json (HD-22)."""
+    st = load(run)
+    lines = [LOG_LINE.match(l) for l in (ROOT / SCRATCH / run / "log.md").read_text().splitlines()]
+    lines = [(m.group(1), m.group(2), m.group(3)) for m in lines if m]
+    times = [datetime.fromisoformat(t) for t, _, _ in lines]
+    launches, relaunched, frame_bytes = {}, set(), 0
+    for _, kind, rest in lines:
+        if kind == "launch":
+            parts = rest.split()
+            launches[parts[1]] = launches.get(parts[1], 0) + 1
+            frame_bytes += int(parts[2][:-1]) if len(parts) > 2 and parts[2].endswith("b") else 0
+        elif kind == "relaunch":
+            relaunched.add(rest)
+    steps_done = sum(1 for _, k, rest in lines if k == "commit:" and re.search(r": step \d+ ", rest))
+    step_relaunches = sum(1 for k in relaunched if k.startswith("step-"))
+    outcome = st["phase"] + (f" ({first_line(st['stop'])[:60]})" if st["phase"] == "stopped" else "")
+    return {"run": run, "task": st["task"] or "-", "outcome": outcome,
+            "elapsed": str(times[-1] - times[0]).split(".")[0] if times else "-",
+            "launches": launches, "relaunches": len(relaunched),
+            "stops": sum(1 for _, k, _ in lines if k == "STOP"),
+            "first_try": f"{max(steps_done - step_relaunches, 0)}/{len(st['plan']['steps']) if st['plan'] else 0}",
+            "tidy": sum(1 for _, k, _ in lines if k == "tidy"), "frame_bytes": frame_bytes}
+
+
+def cmd_report(all_runs):
+    runs = sorted((p.name for p in (ROOT / SCRATCH).glob("run-*") if p.name[4:].isdigit()),
+                  key=lambda n: int(n[4:])) if all_runs else [current_run()]
+    if not runs or runs == [None]:
+        print("idle: no run")
+        return 0
+    for run in runs:
+        if not (ROOT / SCRATCH / run / "state.json").is_file():
+            continue
+        m = report(run)
+        per = " ".join(f"{a}={n}" for a, n in sorted(m["launches"].items()))
+        if all_runs:
+            print(f"{m['run']} {m['task']} {m['outcome']} elapsed={m['elapsed']} launches={sum(m['launches'].values())} "
+                  f"relaunches={m['relaunches']} stops={m['stops']} first-try={m['first_try']} tidy={m['tidy']} "
+                  f"frames={m['frame_bytes']}b")
+        else:
+            print("\n".join([f"run: {m['run']}", f"task: {m['task']}", f"outcome: {m['outcome']}",
+                             f"elapsed: {m['elapsed']}", f"launches: {sum(m['launches'].values())} ({per})",
+                             f"relaunches: {m['relaunches']}", f"stops: {m['stops']}",
+                             f"steps green on first try: {m['first_try']}", f"tidy runs: {m['tidy']}",
+                             f"frame bytes written: {m['frame_bytes']}"]))
+    return 0
+
+
 def cmd_status():
     run = current_run()
     if not run:
@@ -1003,13 +1061,15 @@ def main(argv):
             return cmd_done(rest[0])
         if cmd == "test" and len(rest) == 1:
             return cmd_test(rest[0])
+        if cmd == "report" and rest in ([], ["--all"]):
+            return cmd_report(bool(rest))
         if cmd in simple and not rest:
             return simple[cmd]()
     except Stop as e:
         print(f"STOP {e}")
         return 1
     print("ERROR usage: loop.py start <TASK-n|request file> | next | done \"<RETURN line>\" | test \"<command>\" "
-          "| status | retry | abandon")
+          "| report [--all] | status | retry | abandon")
     return 1
 
 

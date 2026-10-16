@@ -11,6 +11,7 @@ reports its RETURN line. The real harness is untouched.
 import importlib.util
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -233,6 +234,16 @@ class LoopTest(unittest.TestCase):
         # The fake Backlog keeps tasks outside the repo, so intake, plan, and close have nothing to commit.
         self.assertEqual(log.split("\n")[:3], ["TASK-1: step 1 Pay an order", "TASK-1: failing tests and stubs", "init"])
         self.assertEqual(r.git("rev-parse", "HEAD"), r.git("rev-parse", "origin/main"))
+        log_lines = (r.root / ".scratch/run-1/log.md").read_text().splitlines()
+        self.assertTrue(all(re.match(r"^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\+00:00 \S", l) for l in log_lines), log_lines)
+        rep = r.say("report")
+        self.assertIn("task: TASK-1\noutcome: done\nelapsed: 0:00:", rep)
+        self.assertIn("launches: 4 (implementer=1 intake=1 planner=1 test-writer=1)", rep)
+        self.assertIn("relaunches: 0\nstops: 0\nsteps green on first try: 1/1\ntidy runs: 0\nframe bytes written: ", rep)
+        self.assertGreater(int(rep.rsplit(" ", 1)[1]), 1000)
+        rep = r.say("report", "--all")
+        self.assertTrue(rep.startswith("run-1 TASK-1 done elapsed=0:00:"), rep)
+        self.assertIn(" launches=4 relaunches=0 stops=0 first-try=1/1 tidy=0 frames=", rep)
 
     def test_next_repeats_the_pending_instruction_after_a_restart(self):
         line = self.r.say("start", "TASK-1")
@@ -324,6 +335,8 @@ class LoopTest(unittest.TestCase):
         r.files({"src/shared/util.py": "x = 1\n"})
         line = r.ok(line)
         self.assertEqual(line, "STOP step 1 changed files outside its allowlist: src/shared/util.py")
+        self.assertIn("outcome: stopped (step 1 changed files outside its allowlist", r.say("report"))
+        self.assertIn("stops: 1\n", r.say("report"))
         code, out, _ = r.loop("retry")
         self.assertTrue(out.startswith("STOP the working tree is not clean"), out)
 
@@ -341,6 +354,7 @@ class LoopTest(unittest.TestCase):
         self.assertIn("2. GIVEN a paid order WHEN paid again THEN rejected", text)
         self.assertIn("FAIL (exit 1, no JUnit report)", text)
         self.assertIn("Full output: `.scratch/run-1/logs/step-1.txt`", text)
+        self.assertIn("relaunches: 1\nstops: 0\nsteps green on first try: 0/1", r.say("report"))
 
     def test_the_test_command_prints_a_digest_and_keeps_the_log(self):
         r = self.r

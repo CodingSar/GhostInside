@@ -23,7 +23,7 @@ Every command prints one line. Do what it says; your report prints the next.
 |---|---|
 | `LAUNCH <agent> <frame>` | Launch the subagent `<agent>` with the prompt `Read <frame> and follow it.` When it returns, copy its last line exactly: `python3 -I meta/core/tools/loop.py done "<that line>"`. |
 | `ASK <questions> <answers>` | Read the questions file. Show the user every file on a `Show:` line: publish it with the Artifact tool if you have it, otherwise give the path. Ask with `AskUserQuestion`, using the file's questions and options. Write the answers file: one `## Q<n>` heading per question, the user's answer verbatim under it. Then `python3 -I meta/core/tools/loop.py done "RETURN ok <answers>"`. |
-| `DONE <summary>` | Tell the user the summary. Stop. |
+| `DONE <summary>` | Tell the user the summary and the output of `python3 -I meta/core/tools/loop.py report`. Stop. |
 | `STOP <reason>` | Tell the user the reason and the file it names. Wait. When the user has resolved it, `python3 -I meta/core/tools/loop.py retry`; to drop the run, `python3 -I meta/core/tools/loop.py abandon`. |
 | `ERROR <text>` | Do what the text says. |
 
